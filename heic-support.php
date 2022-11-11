@@ -9,9 +9,9 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Plugin Name: HEIC Support
- * Description: Creates a .webp copy of .heic images when they are uploaded to the Media Library.
+ * Description: Allows .heic uploads to the Media Library. Creates a .webp copy of .heic images when they are uploaded.
  * Author: Corey Salzano
- * Version: 0.1.0
+ * Version: 1.0.0
  * Text-domain: heic-support
  */
 
