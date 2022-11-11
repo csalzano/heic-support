@@ -77,8 +77,6 @@ function heic_support_create_webp_copy( $post_id ) {
 }
 add_action( 'add_attachment', 'heic_support_create_webp_copy', 10, 1 );
 
-// - filter requests for .heic images for the substitute URLs and paths
-
 
 // SETTINGS PAGE.
 
