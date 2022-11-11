@@ -131,10 +131,8 @@ function heic_support_page_content() {
 			if ( $imagick->readImage( $folder . DIRECTORY_SEPARATOR . 'image1.heic' ) ) {
 				$imagick->setImageFormat( 'webp' );
 
-				// Create a path to create a webp copy of the image.
-				$name       = 'heic-support-image1.webp';
-				$upload_dir = wp_upload_dir();
-				$imagick->writeImage( $upload_dir['path'] . DIRECTORY_SEPARATOR . $name );
+				// Create a webp copy of the image.
+				$imagick->writeImage( heic_support_test_file_path() );
 				printf(
 					'</p><p>%s</p><h3>%s</h3><p>%s <a href="https://caniuse.com/webp">caniuse.com/webp</a></p><img src="%s" width="%d" />',
 					esc_html( heic_support_imagemagick_version() ),
@@ -159,3 +157,27 @@ function heic_support_page_content() {
 </p></div>
 	<?php
 }
+
+/**
+ * heic_support_test_file_path
+ *
+ * @return void
+ */
+function heic_support_test_file_path() {
+	$upload_dir = wp_upload_dir();
+	return $upload_dir['path'] . DIRECTORY_SEPARATOR
+		. 'heic-support-image1.webp';
+}
+
+/**
+ * heic_support_uninstall
+ *
+ * @return void
+ */
+function heic_support_uninstall() {
+	$path = heic_support_test_file_path();
+	if ( file_exists( $path ) ) {
+		unlink( $path );
+	}
+}
+register_uninstall_hook( __FILE__, 'heic_support_uninstall' );
