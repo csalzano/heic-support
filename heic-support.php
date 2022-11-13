@@ -10,9 +10,11 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Plugin Name: HEIC Support
  * Description: Allows .heic uploads to the Media Library. Creates a .webp copy of .heic images when they are uploaded.
- * Author: Corey Salzano
+ * Author: Breakfast Co.
+ * Author URI: https://breakfastco.xyz/
  * Version: 1.0.0
  * Text-domain: heic-support
+ * License: GPLv2
  */
 
 // CORE FUNCTIONALITY.
