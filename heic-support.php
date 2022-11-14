@@ -238,9 +238,28 @@ function heic_support_test_file_path() {
  * @return void
  */
 function heic_support_uninstall() {
-	$path = heic_support_test_file_path();
-	if ( file_exists( $path ) ) {
-		unlink( $path );
+	if ( ! is_multisite() ) {
+		$path = heic_support_test_file_path();
+		if ( file_exists( $path ) ) {
+			unlink( $path );
+		}
+	} else {
+		$sites = get_sites(
+			array(
+				'network' => 1,
+				'limit'   => 1000,
+			)
+		);
+		foreach ( $sites as $site ) {
+			switch_to_blog( $site->blog_id );
+
+			$path = heic_support_test_file_path();
+			if ( file_exists( $path ) ) {
+				unlink( $path );
+			}
+
+			restore_current_blog();
+		}
 	}
 }
 register_uninstall_hook( __FILE__, 'heic_support_uninstall' );
