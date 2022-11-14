@@ -64,6 +64,17 @@ function heic_support_create_webp_copy( $post_id ) {
 			$name       = basename( $file_path, '.heic' ) . '.webp';
 			$upload_dir = wp_upload_dir();
 			$imagick->writeImage( $upload_dir['path'] . DIRECTORY_SEPARATOR . $name );
+
+			/**
+			 * The Media Library loads these files, but not the Editor.
+			 *
+			 * @link https://developer.wordpress.org/reference/functions/media_sideload_image/#more-information
+			 */
+			if ( ! function_exists( 'media_sideload_image' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/media.php';
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+				require_once ABSPATH . 'wp-admin/includes/image.php';
+			}
 			$copy_post_id = media_sideload_image( $upload_dir['url'] . '/' . $name, 0, get_the_title( $post_id ), 'id' );
 			if ( ! is_wp_error( $copy_post_id ) ) {
 				update_post_meta( $copy_post_id, '_heic_support_copy_of', $post_id );
