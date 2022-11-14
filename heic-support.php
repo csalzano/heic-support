@@ -87,8 +87,57 @@ function heic_support_create_webp_copy( $post_id ) {
 		return;
 	}
 }
-add_action( 'add_attachment', 'heic_support_create_webp_copy', 10, 1 );
+add_action( 'add_attachment', 'heic_support_create_webp_copy', 12, 1 );
 
+/**
+ * When .heic files are added to the Media Library, populate their width,
+ * height, and other attributes that live in meta key _wp_attachment_metadata.
+ *
+ * @param array  $metadata      An array of attachment meta data.
+ * @param int    $attachment_id Current attachment ID.
+ * @param string $context       Additional context. Can be 'create' when metadata was initially created for new attachment
+ *                              or 'update' when the metadata was updated.
+ * @return array
+ */
+function heic_support_populate_meta( $metadata, $attachment_id, $context ) {
+	// Is ImageMagick running?
+	if ( ! class_exists( 'Imagick' ) ) {
+		// No.
+		return $metadata;
+	}
+	$file_path = get_attached_file( $attachment_id );
+	if ( false === $file_path ) {
+		return $metadata;
+	}
+	// Is the attachment an heic?
+	if ( 'heic' !== pathinfo( $file_path, PATHINFO_EXTENSION ) ) {
+		// No.
+		return $metadata;
+	}
+	// Are the width and height missing?
+	if ( false === $metadata ) {
+		$metadata = array();
+	}
+	if ( ! empty( $metadata['width'] ) && ! empty( $metadata['height'] ) ) {
+		// No.
+		return $metadata;
+	}
+	$imagick = new Imagick();
+	try {
+		if ( $imagick->readImage( $file_path ) ) {
+			$new_values          = $imagick->getImageGeometry();
+			$new_values['sizes'] = array();
+			$new_values['file']  = get_post_meta( $attachment_id, '_wp_attached_file', true );
+			$metadata            = wp_parse_args( $metadata, $new_values );
+			return $metadata;
+		}
+	} catch ( ImagickException $ie ) {
+		// "Fatal error: Uncaught ImagickException: no decode delegate for this image format `HEIC'".
+		// The version of Imagick does not support heic
+		return $metadata;
+	}
+}
+add_filter( 'wp_generate_attachment_metadata', 'heic_support_populate_meta', 10, 3 );
 
 // SETTINGS PAGE.
 
