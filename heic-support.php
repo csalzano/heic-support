@@ -189,7 +189,7 @@ function heic_support_page_content() {
 		$folder  = dirname( __FILE__ );
 		$imagick = new Imagick();
 		try {
-			if ( $imagick->readImage( $folder . DIRECTORY_SEPARATOR . 'image1.heic' ) ) {
+			if ( $imagick->readImage( $folder . DIRECTORY_SEPARATOR . 'image4.heic' ) ) {
 				$imagick->setImageFormat( 'webp' );
 
 				// Create a webp copy of the image.
@@ -227,7 +227,7 @@ function heic_support_page_content() {
 function heic_support_test_file_path() {
 	$upload_dir = wp_upload_dir();
 	return $upload_dir['path'] . DIRECTORY_SEPARATOR
-		. 'heic-support-image1.webp';
+		. 'heic-support-image4.webp';
 }
 
 /**
