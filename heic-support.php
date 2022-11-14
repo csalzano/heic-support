@@ -79,13 +79,12 @@ function heic_support_create_webp_copy( $post_id ) {
 			if ( ! is_wp_error( $copy_post_id ) ) {
 				update_post_meta( $copy_post_id, '_heic_support_copy_of', $post_id );
 				update_post_meta( $post_id, '_heic_support_copy_of', $copy_post_id );
-			} else {
-				error_log( '[HEIC Support] ' . $copy_post_id->get_error_message() );
 			}
 		}
 	} catch ( ImagickException $ie ) {
 		// "Fatal error: Uncaught ImagickException: no decode delegate for this image format `HEIC'".
-		error_log( '[HEIC Support] Failed to create copy of ' . $file_path . ', ' . $ie->getMessage() );
+		// The version of Imagick does not support heic
+		return;
 	}
 }
 add_action( 'add_attachment', 'heic_support_create_webp_copy', 10, 1 );
