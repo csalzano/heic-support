@@ -186,21 +186,23 @@ function heic_support_page_content() {
 		esc_html_e( 'ImageMagick is not installed on this server. Some hosts require a switch be flipped before the program is available to a site.', 'heic-support' );
 		echo '</p>';
 	} else {
-		$folder  = dirname( __FILE__ );
 		$imagick = new Imagick();
 		try {
-			if ( $imagick->readImage( $folder . DIRECTORY_SEPARATOR . 'image4.heic' ) ) {
+			if ( $imagick->readImage( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'image4.heic' ) ) {
 				$imagick->setImageFormat( 'webp' );
 
 				// Create a webp copy of the image.
-				$imagick->writeImage( heic_support_test_file_path() );
+				$path = heic_support_test_file_path();
+				$imagick->writeImage( $path );
+				$upload_dir = wp_upload_dir();
+				$name = basename( $path );
 				printf(
 					'</p><p>%s</p><h3>%s</h3><p>%s <a href="https://caniuse.com/webp">caniuse.com/webp</a></p><img src="%s" width="%d" />',
 					esc_html( heic_support_imagemagick_version() ),
 					esc_html__( 'Sample .heic image converted to .webp', 'heic-support' ),
 					esc_html__( 'This plugin is working and can convert .heic images to .webp. If you do not see an image below, your browser may not support .webp.', 'heic-support' ),
 					esc_attr( $upload_dir['url'] . '/' . $name ),
-					esc_attr( get_option( 'large_size_w' ) )
+					esc_attr( get_option( 'medium_size_w' ) )
 				);
 			}
 		} catch ( ImagickException $ie ) {
