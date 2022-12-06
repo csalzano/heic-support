@@ -219,7 +219,7 @@ function heic_support_page_content() {
 		'<h3>%s</h3><p>%s<br><a href="https://imagemagick.org/">imagemagick.org</a></p><p>%s<br /><a href="https://github.com/csalzano/heic-support">github.com/csalzano/heic-support</p></p></div>',
 		esc_html__( 'Links', 'heic-support' ),
 		esc_html__( 'ImageMagick homepage', 'heic-support' ),
-		esc_html__( 'Plugin homepage', 'heic-support' ),
+		esc_html__( 'Plugin homepage', 'heic-support' )
 	);
 }
 
