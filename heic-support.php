@@ -142,7 +142,7 @@ add_filter( 'wp_generate_attachment_metadata', 'heic_support_populate_meta', 10,
 // SETTINGS PAGE.
 
 /**
- * heic_support_add_menu
+ * Adds an HEIC Support submenu under Media.
  *
  * @return void
  */
@@ -159,7 +159,7 @@ function heic_support_add_menu() {
 add_action( 'admin_menu', 'heic_support_add_menu' );
 
 /**
- * heic_support_imagemagick_version
+ * Returns the ImageMagick version string.
  *
  * @return string
  */
@@ -171,7 +171,7 @@ function heic_support_imagemagick_version() {
 }
 
 /**
- * heic_support_page_content
+ * Outputs HTML that renders the HEIC Support dashboard page.
  *
  * @return void
  */
@@ -224,7 +224,7 @@ function heic_support_page_content() {
 }
 
 /**
- * heic_support_test_file_path
+ * Returns a file path to the webp copy of the test image.
  *
  * @return void
  */
@@ -235,7 +235,7 @@ function heic_support_test_file_path() {
 }
 
 /**
- * heic_support_uninstall
+ * Deletes the test image when the plugin is uninstalled.
  *
  * @return void
  */
