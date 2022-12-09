@@ -207,7 +207,7 @@ function heic_support_page_content() {
 			}
 		} catch ( ImagickException $ie ) {
 			// "Fatal error: Uncaught ImagickException: no decode delegate for this image format `HEIC'".
-			$msg = __('no decode delegate for this image format \'HEIC\'', 'heic-support' );
+			$msg = 'no decode delegate for this image format `HEIC\'';
 			if ( false !== strpos( $ie->getMessage(), $msg ) ) {
 				esc_html_e( 'ImageMagick is installed, but does not support HEIC. Oldest version with HEIC support is 7.0.8-46. Installed version is ', 'heic-support' );
 				echo esc_html( heic_support_imagemagick_version() );
