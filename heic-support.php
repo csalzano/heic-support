@@ -149,8 +149,8 @@ add_filter( 'wp_generate_attachment_metadata', 'heic_support_populate_meta', 10,
 function heic_support_add_menu() {
 	add_submenu_page(
 		'upload.php',
-		__( 'HEIC Support', 'heic-support' ),
-		__( 'HEIC Support', 'heic-support' ),
+		_x( 'HEIC Support', 'UI Strings', 'heic-support' ),
+		_x( 'HEIC Support', 'UI Strings', 'heic-support' ),
 		'upload_files',
 		'heic-support',
 		'heic_support_page_content'
@@ -178,7 +178,7 @@ function heic_support_imagemagick_version() {
 function heic_support_page_content() {
 	?>
 <div class="wrap">
-	<h2><?php esc_html_e( 'HEIC Support', 'heic-support' ); ?></h2>
+	<h2><?php echo esc_html_x( 'HEIC Support', 'UI Strings', 'heic-support' ); ?></h2>
 	<p>
 	<?php
 	esc_html_e( 'This plugin only works on servers running ImageMagick 7 or above. ', 'heic-support' );
