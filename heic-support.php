@@ -43,6 +43,9 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			// Adds settings to the dashboard at Settings → Media.
 			add_action( 'admin_init', array( $this, 'add_settings' ) );
 
+			// Adds a link to the plugins list that helps users find Settings → Media.
+			add_filter( 'plugin_action_links_heic-support/heic-support.php', array( $this, 'add_settings_link' ) );
+
 			// Deletes the test image when the plugin is uninstalled.
 			register_uninstall_hook( __FILE__, array( __CLASS__, 'uninstall' ) );
 		}
@@ -117,6 +120,17 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 				'media',
 				$section
 			);
+		}
+
+		/**
+		 * add_settings_link
+		 *
+		 * @param  array $links
+		 * @return array
+		 */
+		public function add_settings_link( $links ) {
+			$links[] = '<a href="' . admin_url( 'options-media.php' ) . '">' . __( 'Settings', 'heic-support' ) . '</a>';
+			return $links;
 		}
 
 		/**
