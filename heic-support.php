@@ -29,13 +29,13 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 */
 		public function add_hooks() {
 			// Allow .heic files to be uploaded into the Media Library.
-			add_filter( 'upload_mimes', array( $this, 'add_mimes' ), 10, 2 );
+			add_filter( 'upload_mimes', array( $this, 'add_mimes' ) );
 
 			// Creates a copy of .heic images uploaded to the Media Library.
 			add_action( 'add_attachment', array( $this, 'create_copy' ), 12, 1 );
 
 			// Replace heic uploads without preserving the heic.
-			add_filter( 'wp_handle_upload_prefilter', array( $this, 'replace' ), 10, 1 );
+			add_filter( 'wp_handle_upload_prefilter', array( $this, 'replace' ) );
 
 			// Populates width, height, and other attributes in meta key _wp_attachment_metadata.
 			add_filter( 'wp_generate_attachment_metadata', array( $this, 'populate_meta' ), 10, 3 );
@@ -54,10 +54,9 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 * Allow .heic files to be uploaded into the Media Library.
 		 *
 		 * @param  array            $mimes Array of allowed mime types.
-		 * @param  int|WP_User|null $user The current user.
 		 * @return array
 		 */
-		public function add_mimes( $mimes, $user ) {
+		public function add_mimes( $mimes ) {
 			if ( empty( $mimes['heic'] ) ) {
 				$mimes['heic'] = 'image/heic';
 			}
@@ -423,7 +422,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			if ( ! is_multisite() ) {
 				$path = self::test_file_path();
 				if ( file_exists( $path ) ) {
-					unlink( $path );
+					wp_delete_file( $path );
 				}
 			} else {
 				$sites = get_sites(
@@ -437,7 +436,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 
 					$path = self::test_file_path();
 					if ( file_exists( $path ) ) {
-						unlink( $path );
+						wp_delete_file( $path );
 					}
 
 					restore_current_blog();
