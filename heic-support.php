@@ -69,16 +69,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 * @return void
 		 */
 		public function add_settings() {
-			register_setting(
-				'media',
-				'heic_support_replace',
-				array(
-					'type'              => 'boolean',
-					'description'       => __( 'Replace .heic images uploaded to the Media Library instead of creating copies.', 'heic-support' ),
-					'sanitize_callback' => 'rest_sanitize_boolean',
-					'show_in_rest'      => true,
-				)
-			);
+
 
 			$section = 'heic_support_section';
 			add_settings_section(
@@ -94,7 +85,36 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 				return;
 			}
 
+			// Format setting.
+			register_setting(
+				'media',
+				'heic_support_format',
+				array(
+					'type'              => 'string',
+					'description'       => __( 'Convert .heic images to this format.', 'heic-support' ),
+					'sanitize_callback' => 'sanitize_text_field',
+					'show_in_rest'      => true,
+				)
+			);
+			add_settings_field(
+				'format',
+				__( 'Convert To', 'heic-support' ),
+				array( $this, 'callback_format_setting' ),
+				'media',
+				$section
+			);
+
 			// Replace setting.
+			register_setting(
+				'media',
+				'heic_support_replace',
+				array(
+					'type'              => 'boolean',
+					'description'       => __( 'Replace .heic images uploaded to the Media Library instead of creating copies.', 'heic-support' ),
+					'sanitize_callback' => 'rest_sanitize_boolean',
+					'show_in_rest'      => true,
+				)
+			);
 			add_settings_field(
 				'replace',
 				__( 'Replace', 'heic-support' ),
@@ -134,12 +154,55 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		}
 
 		/**
+		 * get_extension
+		 *
+		 * @return string
+		 */
+		protected static function get_extension() {
+			$format = self::get_format();
+			if ( 'jpeg' === $format ) {
+				return apply_filters( 'heic_support_extension', 'jpg' );
+			}
+			return $format;
+		}
+
+		/**
+		 * get_format
+		 *
+		 * @return string
+		 */
+		protected static function get_format() {
+			$value = get_option( 'heic_support_format' );
+			if ( empty( $value ) ) {
+				$value = 'webp';
+			}
+			return apply_filters( 'heic_support_format', $value );
+		}
+
+		/**
 		 * callback_imagemagick_setting
 		 *
 		 * @return void
 		 */
 		public function callback_imagemagick_setting() {
 			echo esc_html( $this->imagemagick_version() );
+		}
+
+		/**
+		 * Outputs HTML that renders the Format setting radio buttons.
+		 *
+		 * @return void
+		 */
+		public function callback_format_setting() {
+			$value = self::get_format();
+			printf(
+				'<fieldset><label for="heic_support_webp"><input type="radio" id="heic_support_webp" name="heic_support_format" value="webp" %1$s/> %2$s</label><br />'
+				. '<label for="heic_support_jpeg"><input type="radio" id="heic_support_jpeg" name="heic_support_format" value="jpeg" %3$s/> %4$s</label></fieldset>',
+				checked( $value, 'webp', false ),
+				esc_html__( '.webp', 'heic-support' ),
+				checked( $value, 'jpeg', false ),
+				esc_html__( '.jpg', 'heic-support' )
+			);
 		}
 
 		/**
@@ -163,21 +226,20 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			} else {
 				$imagick = new Imagick();
 				try {
-					if ( $imagick->readImage( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'image4.heic' ) ) {
-						$ext = apply_filters( 'heic_support_extension', 'webp' );
-						$imagick->setImageFormat( $ext );
+					if ( $imagick->readImage( __DIR__ . DIRECTORY_SEPARATOR . 'image4.heic' ) ) {
+						$imagick->setImageFormat( self::get_format() );
 
 						// Create a copy of the image.
 						$path = self::test_file_path();
 						$imagick->writeImage( $path );
 						$upload_dir = wp_upload_dir();
-						$name = basename( $path );
+						$name       = basename( $path );
 						printf(
 							'<figure><img src="%s" width="%d" /><figcaption>%s .%s.</figcaption></figure>',
 							esc_attr( $upload_dir['url'] . '/' . $name ),
 							esc_attr( get_option( 'medium_size_w' ) ),
 							esc_html__( 'This plugin can convert .heic images. If you do not see an image, your browser may not support', 'heic-support' ),
-							esc_html( $ext )
+							esc_html( self::get_extension() )
 						);
 					}
 				} catch ( ImagickException $ie ) {
@@ -266,10 +328,9 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			$imagick = new Imagick();
 			try {
 				if ( $imagick->readImage( $file_path ) ) {
-					$ext = apply_filters( 'heic_support_extension', 'webp' );
-					$imagick->setImageFormat( $ext );
+					$imagick->setImageFormat( self::get_format() );
 					// Create a path to a copy of the image.
-					$name       = basename( $file_path, '.heic' ) . '.' . $ext;
+					$name       = basename( $file_path, '.heic' ) . '.' . self::get_extension();
 					$upload_dir = wp_upload_dir();
 					$imagick->writeImage( $upload_dir['path'] . DIRECTORY_SEPARATOR . $name );
 
@@ -386,10 +447,10 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			$imagick = new Imagick();
 			try {
 				if ( $imagick->readImage( $file['tmp_name'] ) ) {
-					$ext = apply_filters( 'heic_support_extension', 'webp' );
-					$imagick->setImageFormat( $ext );
-					$file['type'] = apply_filters( 'heic_support_mime', 'image/' . $ext );
-					$file['name'] = basename( $file['name'], '.heic' ) . '.' . $ext;
+					$format = self::get_format();
+					$imagick->setImageFormat( $format );
+					$file['type'] = apply_filters( 'heic_support_mime', 'image/' . $format );
+					$file['name'] = basename( $file['name'], '.heic' ) . '.' . self::get_extension();
 					$imagick->writeImage( $file['tmp_name'] );
 					$file['size'] = wp_filesize( $file['tmp_name'] );
 				}
@@ -410,7 +471,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		protected static function test_file_path() {
 			$upload_dir = wp_upload_dir();
 			return $upload_dir['path'] . DIRECTORY_SEPARATOR
-				. 'heic-support-image4.' . apply_filters( 'heic_support_extension', 'webp' );
+				. 'heic-support-image4.' . self::get_extension();
 		}
 
 		/**
