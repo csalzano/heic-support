@@ -3,21 +3,21 @@ Contributors: salzano
 Donate link: https://coreysalzano.com/donate/
 Tags: heic, webp, iphone
 Requires at least: 5.9
-Tested up to: 6.2.0
-Stable tag: 2.0.0
+Tested up to: 6.3.1
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Allows .heic uploads to the Media Library. Creates a .webp copy of .heic images when they are uploaded.
+Allows .heic uploads to the Media Library. Creates .webp or .jpg copies of .heic images when they are uploaded.
 
 Visit this plugin's home page at [https://breakfastco.xyz/heic-support/](https://breakfastco.xyz/heic-support/)
 
 
 == Description ==
 
-Allows .heic uploads to the Media Library. Creates a .webp copy of .heic images when they are uploaded. An optional feature replaces the original upload instead of creating a copy.
+Allows .heic uploads to the Media Library. Creates .webp or .jpg copies of .heic images when they are uploaded. An optional feature replaces the original upload instead of creating a copy.
 
-Creation of .webp copies usually works on servers running ImageMagick 7 or above. Check Settings → Media → HEIC Support after activating to see if your server provides ImageMagick.
+Creation of .webp or .jpg copies usually works on servers running ImageMagick 7 or above. Check Settings → Media → HEIC Support after activating to see if your server provides ImageMagick.
 
 
 == Installation ==
@@ -29,6 +29,12 @@ Check the page at Media → HEIC Support after activating to see if your server 
 
 
 == Changelog ==
+
+= 2.1.0 =
+* [Added] Adds .jpg support. Adds a setting to toggle whether images are converted to webp or jpg. Defaults to webp.
+* [Added] Show the settings section at Settings → Media even if ImageMagick is not installed. Explain to users that their host does not provide the library.
+* [Fixed] Removes layers from the icon .svg file.
+* [Changed] Changes the tested up to version to 6.3.1.
 
 = 2.0.0 =
 * [Added] Add filters around the webp format and image/webp mime type strings so they can be changed by other developers.
@@ -46,6 +52,9 @@ Check the page at Media → HEIC Support after activating to see if your server 
 * [Added] First public version. Adds `.heic` support to WordPress. If ImageMagick 7 or above is installed, creates `.webp` copies of `.heic` images uploaded to the Media Library.
 
 == Upgrade Notice ==
+
+= 2.1.0 =
+Adds .jpg support. Adds a setting to toggle whether images are converted to webp or jpg. Defaults to webp. Show the settings section at Settings → Media even if ImageMagick is not installed. Explain to users that their host does not provide the library. Removes layers from the icon .svg file. Changes the tested up to version to 6.3.1.
 
 = 2.0.0 =
 Moves all plugin settings from Media → HEIC Support to Settings → Media. Adds an optional feature to replace .heic images rather than create a copy. A switch enables the feature at Settings → Media. Changes the tested up to version to 6.2.0. Add filters around the webp format and image/webp mime type strings so they can be changed by other developers.
