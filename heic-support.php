@@ -70,7 +70,6 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 */
 		public function add_settings() {
 
-
 			$section = 'heic_support_section';
 			add_settings_section(
 				$section,
@@ -79,13 +78,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 				'media'
 			);
 
-			// Is the plugin's primary feature going to work?
-			if ( ! class_exists( 'Imagick' ) ) {
-				// No. Do not output any of the options.
-				return;
-			}
-
-			// Format setting.
+			// Format setting registration.
 			register_setting(
 				'media',
 				'heic_support_format',
@@ -96,15 +89,8 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 					'show_in_rest'      => true,
 				)
 			);
-			add_settings_field(
-				'format',
-				__( 'Convert To', 'heic-support' ),
-				array( $this, 'callback_format_setting' ),
-				'media',
-				$section
-			);
 
-			// Replace setting.
+			// Replace setting registration.
 			register_setting(
 				'media',
 				'heic_support_replace',
@@ -115,6 +101,23 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 					'show_in_rest'      => true,
 				)
 			);
+
+			// Is the plugin's primary feature going to work?
+			if ( ! class_exists( 'Imagick' ) ) {
+				// No. Do not output any of the options.
+				return;
+			}
+
+			// Format setting output.
+			add_settings_field(
+				'format',
+				__( 'Convert To', 'heic-support' ),
+				array( $this, 'callback_format_setting' ),
+				'media',
+				$section
+			);
+
+			// Replace setting output.
 			add_settings_field(
 				'replace',
 				__( 'Replace', 'heic-support' ),
