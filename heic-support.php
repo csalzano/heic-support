@@ -81,11 +81,6 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 				)
 			);
 
-			// Do not show options if the plugin is not going to work.
-			if ( ! class_exists( 'Imagick' ) ) {
-				return;
-			}
-
 			$section = 'heic_support_section';
 			add_settings_section(
 				$section,
@@ -93,6 +88,12 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 				array( $this, 'callback_section' ),
 				'media'
 			);
+
+			// Is the plugin's primary feature going to work?
+			if ( ! class_exists( 'Imagick' ) ) {
+				// No. Do not output any of the options.
+				return;
+			}
 
 			// Replace setting.
 			add_settings_field(
@@ -198,6 +199,17 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 * @return void
 		 */
 		public function callback_section() {
+			// Is the plugin's primary feature going to work?
+			if ( ! class_exists( 'Imagick' ) ) {
+				// No.
+				printf(
+					/* translators: 1. Anchor element opening tag. 2. Anchor element closing tag. */
+					esc_html__( 'This server does not provide ImageMagick, and .heic images cannot be converted without it. Ask your web host to enable ImageMagick, or %1$sread our list of compatible hosts%2$s.', 'heic-support' ),
+					'<a href="https://breakfastco.xyz/heic-support/#hosting">',
+					'</a>'
+				);
+				return;
+			}
 			esc_html_e( 'Control how .heic images are handled during uploads.', 'heic-support' );
 		}
 
