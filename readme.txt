@@ -27,6 +27,9 @@ Creation of .webp or .jpg copies usually works on servers running ImageMagick 7 
 
 Check the page at Media → HEIC Support after activating to see if your server provides ImageMagick 7.
 
+== Screenshots ==
+
+1. The settings are located at Settings → Media → HEIC Support in the dashboard.
 
 == Changelog ==
 
