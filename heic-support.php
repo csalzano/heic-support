@@ -2,6 +2,7 @@
 /**
  * HEIC Support
  *
+ * @author Corey Salzano <csalzano@duck.com>
  * @package HEIC_Support
  */
 
@@ -10,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Plugin Name: HEIC Support
  * Description: Allows .heic uploads to the Media Library. Creates .webp or .jpg copies of .heic images when they are uploaded.
- * Author: Breakfast Co.
+ * Author: Breakfast
  * Author URI: https://breakfastco.xyz/
  * Version: 2.1.0
  * Text-domain: heic-support
@@ -53,7 +54,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		/**
 		 * Allow .heic files to be uploaded into the Media Library.
 		 *
-		 * @param  array            $mimes Array of allowed mime types.
+		 * @param  array $mimes Array of allowed mime types.
 		 * @return array
 		 */
 		public function add_mimes( $mimes ) {
@@ -422,7 +423,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		}
 
 		/**
-		 * replace
+		 * Replaces uploaded .heic files with equivalents during uploads.
 		 *
 		 * @param  array $file An array of data for a single file.
 		 * @return array
