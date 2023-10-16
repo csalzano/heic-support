@@ -429,8 +429,14 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 * @return array
 		 */
 		public function replace( $file ) {
+			// Does $file look like an uploaded file?
+			if ( empty( $file['tmp_name'] ) || empty( $file['name'] ) ) {
+				return $file;
+			}
+
 			// Is this image even an heic?
-			if ( empty( $file['type'] ) || 'image/heic' !== $file['type'] ) {
+			$wp_filetype = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'] );
+			if ( empty( $wp_filetype['type'] ) || 'image/heic' !== $wp_filetype['type'] ) {
 				// No.
 				return $file;
 			}
