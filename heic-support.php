@@ -236,6 +236,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 
 						// Create a copy of the image.
 						$path = self::test_file_path();
+						$this->save_test_image_path( $path );
 						$imagick->writeImage( $path );
 						$upload_dir = wp_upload_dir();
 						$name       = basename( $path );
@@ -475,27 +476,63 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		}
 
 		/**
-		 * Returns a file path to the copy of the test image.
+		 * save_test_image_path
+		 *
+		 * @param  string $path
+		 * @return void
+		 */
+		protected function save_test_image_path( $path ) {
+			$key       = 'heic_support_test_image_paths';
+			$paths_arr = get_option( $key );
+			if ( ! is_array( $paths_arr ) ) {
+				$paths_arr = array();
+			}
+			$paths_arr[] = $path;
+			update_option( $key, $paths_arr );
+		}
+
+		/**
+		 * Returns a unique file path where we can save a test image.
 		 *
 		 * @return string
 		 */
 		protected static function test_file_path() {
 			$upload_dir = wp_upload_dir();
 			return $upload_dir['path'] . DIRECTORY_SEPARATOR
-				. 'heic-support-image4.' . self::get_extension();
+				. wp_unique_filename(
+					$upload_dir['path'],
+					'heic-support-image4.' . self::get_extension()
+				);
 		}
 
 		/**
-		 * Deletes the test image when the plugin is uninstalled.
+		 * Removes plugin data and test images from the current site.
+		 *
+		 * @return void
+		 */
+		protected static function uninstall_guts() {
+			$paths = get_option( 'heic_support_test_image_paths' );
+			if ( is_array( $paths ) ) {
+				foreach ( $paths as $path ) {
+					if ( file_exists( $path ) ) {
+						wp_delete_file( $path );
+					}
+				}
+			}
+
+			delete_option( 'heic_support_format' );
+			delete_option( 'heic_support_replace' );
+			delete_option( 'heic_support_test_image_paths' );
+		}
+
+		/**
+		 * Deletes plugin data and test images when the plugin is uninstalled.
 		 *
 		 * @return void
 		 */
 		public static function uninstall() {
 			if ( ! is_multisite() ) {
-				$path = self::test_file_path();
-				if ( file_exists( $path ) ) {
-					wp_delete_file( $path );
-				}
+				self::uninstall_guts();
 			} else {
 				$sites = get_sites(
 					array(
@@ -505,12 +542,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 				);
 				foreach ( $sites as $site ) {
 					switch_to_blog( $site->blog_id );
-
-					$path = self::test_file_path();
-					if ( file_exists( $path ) ) {
-						wp_delete_file( $path );
-					}
-
+					self::uninstall_guts();
 					restore_current_blog();
 				}
 			}
