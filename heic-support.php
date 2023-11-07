@@ -57,7 +57,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			add_filter( 'wp_handle_upload_prefilter', array( $this, 'replace' ) );
 
 			// Populates width, height, and other attributes in meta key _wp_attachment_metadata.
-			add_filter( 'wp_generate_attachment_metadata', array( $this, 'populate_meta' ), 10, 3 );
+			add_filter( 'wp_generate_attachment_metadata', array( $this, 'populate_meta' ), 10, 2 );
 
 			// Adds settings to the dashboard at Settings → Media.
 			add_action( 'admin_init', array( $this, 'add_settings' ) );
@@ -378,11 +378,9 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 *
 		 * @param array  $metadata      An array of attachment meta data.
 		 * @param int    $attachment_id Current attachment ID.
-		 * @param string $context       Additional context. Can be 'create' when metadata was initially created for new attachment
-		 *                              or 'update' when the metadata was updated.
 		 * @return array
 		 */
-		public function populate_meta( $metadata, $attachment_id, $context ) {
+		public function populate_meta( $metadata, $attachment_id ) {
 			// Is ImageMagick running?
 			if ( ! class_exists( 'Imagick' ) ) {
 				// No.
