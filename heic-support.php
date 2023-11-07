@@ -26,6 +26,21 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 	class Heic_Support_Plugin {
 
 		const OPTION_TEST_IMAGE = 'heic_support_test_image_paths';
+
+		/**
+		 * True or false, the test image conversion worked.
+		 *
+		 * @var bool $test_success
+		 */
+		protected $test_success;
+
+		/**
+		 * Escaped HTML displayed in the Test setting at Settings → Media.
+		 *
+		 * @var string $test_result_html
+		 */
+		protected $test_result_html;
+
 		/**
 		 * Adds filter and action hooks that power this plugin.
 		 *
@@ -52,6 +67,9 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 
 			// Deletes the test image when the plugin is uninstalled.
 			register_uninstall_hook( __FILE__, array( __CLASS__, 'uninstall' ) );
+
+			// Run our conversion test when users visit wp-admin/options-media.php.
+			add_action( 'admin_enqueue_scripts', array( $this, 'test_run' ) );
 		}
 
 		/**
@@ -112,32 +130,34 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 				return;
 			}
 
-			// Format setting output.
-			add_settings_field(
-				'format',
-				__( 'Convert To', 'heic-support' ),
-				array( $this, 'callback_format_setting' ),
-				'media',
-				$section
-			);
+			if ( $this->test_success ) {
+				// Format setting output.
+				add_settings_field(
+					'format',
+					__( 'Convert To', 'heic-support' ),
+					array( $this, 'callback_format_setting' ),
+					'media',
+					$section
+				);
 
-			// Replace setting output.
-			add_settings_field(
-				'replace',
-				__( 'Replace', 'heic-support' ),
-				array( $this, 'callback_replace_setting' ),
-				'media',
-				$section
-			);
+				// Replace setting output.
+				add_settings_field(
+					'replace',
+					__( 'Replace', 'heic-support' ),
+					array( $this, 'callback_replace_setting' ),
+					'media',
+					$section
+				);
 
-			// ImageMagick setting.
-			add_settings_field(
-				'imagemagick',
-				__( 'ImageMagick', 'heic-support' ),
-				array( $this, 'callback_imagemagick_setting' ),
-				'media',
-				$section
-			);
+				// ImageMagick setting.
+				add_settings_field(
+					'imagemagick',
+					__( 'ImageMagick', 'heic-support' ),
+					array( $this, 'callback_imagemagick_setting' ),
+					'media',
+					$section
+				);
+			}
 
 			// Test setting.
 			add_settings_field(
@@ -227,44 +247,14 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			);
 		}
 
+		/**
+		 * Outputs the Test setting content at Settings → Media → HEIC Support.
+		 *
+		 * @return void
+		 */
 		public function callback_test_setting() {
-			if ( ! class_exists( 'Imagick' ) ) {
-				esc_html_e( 'ImageMagick is not installed on this server. This plugin only works on servers running ImageMagick. Some hosts require a switch be flipped before the program is available to a site.', 'heic-support' );
-			} else {
-				$imagick = new Imagick();
-				try {
-					if ( $imagick->readImage( __DIR__ . DIRECTORY_SEPARATOR . 'image4.heic' ) ) {
-						$imagick->setImageFormat( self::get_format() );
-
-						// Create a copy of the image.
-						$path = self::test_file_path();
-						$this->save_test_image_path( $path );
-						$imagick->writeImage( $path );
-						$upload_dir = wp_upload_dir();
-						$name       = basename( $path );
-						printf(
-							'<figure><img src="%s" width="%d" /><figcaption>%s .%s.</figcaption></figure>',
-							esc_attr( $upload_dir['url'] . '/' . $name ),
-							esc_attr( get_option( 'medium_size_w' ) ),
-							esc_html__( 'This plugin can convert .heic images. If you do not see an image, your browser may not support', 'heic-support' ),
-							esc_html( self::get_extension() )
-						);
-					}
-				} catch ( ImagickException $ie ) {
-					// "Fatal error: Uncaught ImagickException: no decode delegate for this image format `HEIC'".
-					$msg = 'no decode delegate for this image format `HEIC\'';
-					if ( false !== strpos( $ie->getMessage(), $msg ) ) {
-						printf(
-							/* translators: 1. An opening bold text tag <b>. 2. A closing bold text tag </b>. */
-							esc_html__( '%1$sFailed%2$s. ImageMagick is installed, but does not support HEIC. The version might be too old, or perhaps your server is missing libheif. Installed version is ', 'heic-support' ),
-							'<b>',
-							'</b>'
-						);
-						echo esc_html( $this->imagemagick_version() );
-						echo '</p>';
-					}
-				}
-			}
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo $this->test_result_html ?? '';
 		}
 
 		/**
@@ -483,12 +473,74 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		}
 
 		/**
-		 * save_test_image_path
+		 * Tries to convert an .heic image that ships with this plugin. Stashes
+		 * a message describing what happened in $this->test_result_html so it
+		 * can be retrieved.
+		 *
+		 * @param  string $hook_suffix The current admin page.
+		 * @return void
+		 */
+		public function test_run( $hook_suffix ) {
+			// Is this page wp-admin/options-media.php?
+			if ( 'options-media.php' !== $hook_suffix ) {
+				// No.
+				return;
+			}
+
+			// Try our test image conversion & preserve data about the result.
+			if ( ! class_exists( 'Imagick' ) ) {
+				// Can't even try.
+				$this->test_success     = false;
+				$this->test_result_html = esc_html__( 'ImageMagick is not installed on this server. This plugin only works on servers running ImageMagick. Some hosts require a switch be flipped before the program is available to a site.', 'heic-support' );
+				return;
+			}
+
+			$imagick = new Imagick();
+			try {
+				if ( $imagick->readImage( __DIR__ . DIRECTORY_SEPARATOR . 'image4.heic' ) ) {
+					$imagick->setImageFormat( self::get_format() );
+
+					// Create a copy of the image.
+					$path = self::test_file_path();
+					$this->test_save_image_path( $path );
+					$imagick->writeImage( $path );
+					$upload_dir = wp_upload_dir();
+					$name       = basename( $path );
+					// It worked!
+					$this->test_success     = true;
+					$this->test_result_html = sprintf(
+						'<figure><img src="%s" width="%d" /><figcaption>%s .%s.</figcaption></figure>',
+						esc_attr( $upload_dir['url'] . '/' . $name ),
+						esc_attr( get_option( 'medium_size_w' ) ),
+						esc_html__( 'This plugin can convert .heic images. If you do not see an image, your browser may not support', 'heic-support' ),
+						esc_html( self::get_extension() )
+					);
+				}
+			} catch ( ImagickException $ie ) {
+				// "Fatal error: Uncaught ImagickException: no decode delegate for this image format `HEIC'".
+				$msg = 'no decode delegate for this image format `HEIC\'';
+				if ( false !== strpos( $ie->getMessage(), $msg ) ) {
+					$this->test_success     = false;
+					$this->test_result_html = sprintf(
+						/* translators: 1. An opening bold text tag <b>. 2. A closing bold text tag </b>. 3. An ImageMagick version string. 4. Anchor element opening tag. 5. Anchor element closing tag. */
+						esc_html__( '%1$sFailed%2$s. ImageMagick is installed, but does not support HEIC. You may upload .heic files, but they will not be converted. The version might be too old, or perhaps your server is missing libheif. Installed version is %3$s. %4$sRead our list of web hosts%5$s where this plugin has been tested.', 'heic-support' ),
+						'<b>',
+						'</b>',
+						esc_html( $this->imagemagick_version() ),
+						'<a href="https://breakfastco.xyz/heic-support/#hosting">',
+						'</a>'
+					);
+				}
+			}
+		}
+
+		/**
+		 * test_save_image_path
 		 *
 		 * @param  string $path
 		 * @return void
 		 */
-		protected function save_test_image_path( $path ) {
+		protected function test_save_image_path( $path ) {
 			$old_path = get_option( self::OPTION_TEST_IMAGE );
 			if ( ! empty( $old_path ) && file_exists( $old_path ) ) {
 				wp_delete_file( $old_path );
