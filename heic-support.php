@@ -254,7 +254,12 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 					// "Fatal error: Uncaught ImagickException: no decode delegate for this image format `HEIC'".
 					$msg = 'no decode delegate for this image format `HEIC\'';
 					if ( false !== strpos( $ie->getMessage(), $msg ) ) {
-						esc_html_e( 'ImageMagick is installed, but does not support HEIC. The version might be too old, or perhaps your server is missing libheif. Installed version is ', 'heic-support' );
+						printf(
+							/* translators: 1. An opening bold text tag <b>. 2. A closing bold text tag </b>. */
+							esc_html__( '%1$sFailed%2$s. ImageMagick is installed, but does not support HEIC. The version might be too old, or perhaps your server is missing libheif. Installed version is ', 'heic-support' ),
+							'<b>',
+							'</b>'
+						);
 						echo esc_html( $this->imagemagick_version() );
 						echo '</p>';
 					}
