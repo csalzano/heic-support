@@ -24,6 +24,8 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 	 * Heic_Support_Plugin
 	 */
 	class Heic_Support_Plugin {
+
+		const OPTION_TEST_IMAGE = 'heic_support_test_image_paths';
 		/**
 		 * Adds filter and action hooks that power this plugin.
 		 *
@@ -482,13 +484,11 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 * @return void
 		 */
 		protected function save_test_image_path( $path ) {
-			$key       = 'heic_support_test_image_paths';
-			$paths_arr = get_option( $key );
-			if ( ! is_array( $paths_arr ) ) {
-				$paths_arr = array();
+			$old_path = get_option( self::OPTION_TEST_IMAGE );
+			if ( ! empty( $old_path ) && file_exists( $old_path ) ) {
+				wp_delete_file( $old_path );
 			}
-			$paths_arr[] = $path;
-			update_option( $key, $paths_arr );
+			update_option( self::OPTION_TEST_IMAGE, $path );
 		}
 
 		/**
@@ -511,18 +511,14 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 * @return void
 		 */
 		protected static function uninstall_guts() {
-			$paths = get_option( 'heic_support_test_image_paths' );
-			if ( is_array( $paths ) ) {
-				foreach ( $paths as $path ) {
-					if ( file_exists( $path ) ) {
-						wp_delete_file( $path );
-					}
-				}
+			$path = get_option( self::OPTION_TEST_IMAGE );
+			if ( ! empty( $path ) && file_exists( $path ) ) {
+				wp_delete_file( $path );
 			}
 
 			delete_option( 'heic_support_format' );
 			delete_option( 'heic_support_replace' );
-			delete_option( 'heic_support_test_image_paths' );
+			delete_option( self::OPTION_TEST_IMAGE );
 		}
 
 		/**
