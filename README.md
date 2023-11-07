@@ -2,7 +2,7 @@
 
 # HEIC Support
 
-Allows .heic uploads to the Media Library. Creates a .webp copy of .heic images when they are uploaded. An optional feature replaces the original upload instead of creating a copy.
+Allows .heic uploads to the Media Library. Creates .webp or .jpg copies of .heic images when they are uploaded. An optional feature replaces the original upload instead of creating a copy.
 
 Creation of .webp copies usually works on servers running ImageMagick 7 or above. Check Settings → Media → HEIC Support after activating to see if your server provides ImageMagick.
 
