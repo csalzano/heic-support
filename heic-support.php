@@ -278,28 +278,6 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		}
 
 		/**
-		 * check_for_attachment_metadata
-		 *
-		 * @param  array $data
-		 * @param  int $post_id
-		 * @return array
-		 */
-		public function check_for_attachment_metadata( $data, $post_id ) {
-			$transient_guid = get_transient( 'heic_support_guid_' . $post_id );
-			if ( ! empty( $transient_guid ) ) {
-				global $wpdb;
-				$wpdb->update( $wpdb->posts, array( 'guid' => $transient_guid ), array( 'ID' => $post_id ), array( '%s' ), array( '%d' ) );
-				delete_transient( 'heic_support_guid_' . $post_id );
-			}
-			$transient = get_transient( 'heic_support_metadata_' . $post_id );
-			if ( empty( $transient ) ) {
-				return $data;
-			}
-			delete_transient( 'heic_support_metadata_' . $post_id );
-			return $transient;
-		}
-
-		/**
 		 * Filter callback on add_attachment. Creates a copy of .heic images
 		 * uploaded to the Media Library.
 		 *
