@@ -170,9 +170,9 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		}
 
 		/**
-		 * add_settings_link
+		 * Adds a "Settings" link to this plugin's entry at wp-admin/plugins.php.
 		 *
-		 * @param  array $links
+		 * @param  array $links An array of plugin action links. By default this can include 'activate', 'deactivate', and 'delete'. With Multisite active this can also include 'network_active' and 'network_only' items.
 		 * @return array
 		 */
 		public function add_settings_link( $links ) {
@@ -376,8 +376,8 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 * When .heic files are added to the Media Library, populate their width,
 		 * height, and other attributes that live in meta key _wp_attachment_metadata.
 		 *
-		 * @param array  $metadata      An array of attachment meta data.
-		 * @param int    $attachment_id Current attachment ID.
+		 * @param array $metadata      An array of attachment meta data.
+		 * @param int   $attachment_id Current attachment ID.
 		 * @return array
 		 */
 		public function populate_meta( $metadata, $attachment_id ) {
