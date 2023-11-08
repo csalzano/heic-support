@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  * Plugin URI: https://breakfastco.xyz/heic-support/
  * Author: Breakfast
  * Author URI: https://breakfastco.xyz/
- * Version: 2.1.1
+ * Version: 2.1.2
  * Text-domain: heic-support
  * License: GPLv2
  */

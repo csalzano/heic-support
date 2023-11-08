@@ -3,8 +3,8 @@ Contributors: salzano
 Donate link: https://coreysalzano.com/donate/
 Tags: heic, webp, iphone
 Requires at least: 5.9
-Tested up to: 6.3.2
-Stable tag: 2.1.1
+Tested up to: 6.4.0
+Stable tag: 2.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,6 +30,11 @@ Check the page at Media → HEIC Support after activating to see if your server 
 1. The settings are located at Settings → Media → HEIC Support in the dashboard.
 
 == Changelog ==
+
+= 2.1.2 =
+* [Fixed] Shows better error output when ImageMagick is installed on the server but conversions cannot be completed.
+* [Fixed] Uses a unique file name when creating test images in the uploads folder.
+* [Changed] Changes the tested up to version to 6.4.0.
 
 = 2.1.1 =
 * [Added] Adds a screenshot of the plugin settings.
@@ -58,6 +63,9 @@ Check the page at Media → HEIC Support after activating to see if your server 
 * [Added] First public version. Adds `.heic` support to WordPress. If ImageMagick 7 or above is installed, creates `.webp` copies of `.heic` images uploaded to the Media Library.
 
 == Upgrade Notice ==
+
+= 2.1.2 =
+Shows better error output when ImageMagick is installed on the server but conversions cannot be completed. Uses a unique file name when creating test images in the uploads folder. Changes the tested up to version to 6.4.0.
 
 = 2.1.1 =
 Adds a screenshot of the plugin settings. Fixes a bug in the replace feature that prevented it from working in certain environments. Changes the tested up to version to 6.3.2.
