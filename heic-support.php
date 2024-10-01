@@ -181,7 +181,8 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		}
 
 		/**
-		 * get_extension
+		 * Returns the file extension to which .heic images are converted.
+		 * Either "jpg" or "webp".
 		 *
 		 * @return string
 		 */
@@ -194,7 +195,8 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		}
 
 		/**
-		 * get_format
+		 * Retrieves the file format to which .heic images are converted from
+		 * the option where it is stored. Either "jpeg" or "webp".
 		 *
 		 * @return string
 		 */
@@ -207,7 +209,9 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		}
 
 		/**
-		 * callback_imagemagick_setting
+		 * Outputs HTML that renders the ImageMagick setting content at Settings
+		 * → Media → HEIC Support. This is the version of ImageMagick running
+		 * on the server.
 		 *
 		 * @return void
 		 */
@@ -258,7 +262,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		}
 
 		/**
-		 * callback_section
+		 * Outputs the HEIC Support section content at Settings → Media.
 		 *
 		 * @return void
 		 */
@@ -511,9 +515,10 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		}
 
 		/**
-		 * test_save_image_path
+		 * Saves the path to a test image after deleting the file that belongs
+		 * to the current value of the option where the path is stored.
 		 *
-		 * @param  string $path
+		 * @param  string $path The path to a test image we want to save.
 		 * @return void
 		 */
 		protected function test_save_image_path( $path ) {
