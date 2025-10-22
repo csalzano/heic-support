@@ -1,0 +1,101 @@
+# Translation of Plugins - HEIC Support - Stable (latest release) in German
+# This file is distributed under the same license as the Plugins - HEIC Support - Stable (latest release) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2023-04-21 22:18:55+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: GlotPress/4.0.1\n"
+"Language: de\n"
+"Project-Id-Version: Plugins - HEIC Support - Stable (latest release)\n"
+
+#. translators: 1. An opening bold text tag <b>. 2. A closing bold text tag
+#. </b>. 3. An ImageMagick version string. 4. Anchor element opening tag. 5.
+#. Anchor element closing tag.
+#: heic-support.php:506
+msgid "%1$sFailed%2$s. ImageMagick is installed, but does not support HEIC. You may upload .heic files, but they will not be converted. The version might be too old, or perhaps your server is missing libheif. Installed version is %3$s. %4$sRead our list of web hosts%5$s where this plugin has been tested."
+msgstr ""
+
+#. Author of the plugin
+#: heic-support.php
+msgid "Breakfast"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: heic-support.php
+msgid "https://breakfastco.xyz/heic-support/"
+msgstr ""
+
+#. translators: 1. Anchor element opening tag. 2. Anchor element closing tag.
+#: heic-support.php:275
+msgid "This server does not provide ImageMagick, and .heic images cannot be converted without it. Ask your web host to enable ImageMagick, or %1$sread our list of compatible hosts%2$s."
+msgstr ""
+
+#: heic-support.php:235
+msgid ".jpg"
+msgstr ""
+
+#: heic-support.php:233
+msgid ".webp"
+msgstr ""
+
+#: heic-support.php:137
+msgid "Convert To"
+msgstr ""
+
+#: heic-support.php:109
+msgid "Convert .heic images to this format."
+msgstr ""
+
+#: heic-support.php:281
+msgid "Control how .heic images are handled during uploads."
+msgstr "Steuern Sie, wie .heic-Bilder beim Hochladen behandelt werden."
+
+#: heic-support.php:495
+msgid "This plugin can convert .heic images. If you do not see an image, your browser may not support"
+msgstr "Dieses Plugin kann .heic-Bilder konvertieren. Wenn Sie ein Bild nicht sehen, unterstützt Ihr Browser möglicherweise nicht"
+
+#: heic-support.php:474
+msgid "ImageMagick is not installed on this server. This plugin only works on servers running ImageMagick. Some hosts require a switch be flipped before the program is available to a site."
+msgstr "ImageMagick ist auf diesem Server nicht installiert. Dieses Plugin funktioniert nur auf Servern mit ImageMagick. Bei einigen Hosts muss ein Schalter umgelegt werden, bevor das Programm für eine Website verfügbar ist."
+
+#: heic-support.php:250
+msgid "Does not preserve the original .heic files."
+msgstr "Die ursprünglichen .heic-Dateien bleiben nicht erhalten."
+
+#: heic-support.php:179
+msgid "Settings"
+msgstr "﻿Einstellungen"
+
+#: heic-support.php:165
+msgid "Test"
+msgstr "Testen"
+
+#: heic-support.php:155
+msgid "ImageMagick"
+msgstr "ImageMagick"
+
+#: heic-support.php:146
+msgid "Replace"
+msgstr "Ersetzen"
+
+#: heic-support.php:121 heic-support.php:249
+msgid "Replace .heic images uploaded to the Media Library instead of creating copies."
+msgstr ".heic-Bilder, die in die Mediathek hochgeladen werden, können ersetzt werden, anstatt Kopien zu erstellen."
+
+#. Author URI of the plugin
+#: heic-support.php
+msgid "https://breakfastco.xyz/"
+msgstr "https://breakfastco.xyz/"
+
+#. Description of the plugin
+#: heic-support.php
+msgid "Allows .heic uploads to the Media Library. Creates .webp or .jpg copies of .heic images when they are uploaded."
+msgstr ""
+
+#. Plugin Name of the plugin
+#: heic-support.php heic-support.php:98
+msgid "HEIC Support"
+msgstr "HEIC Support"
