@@ -1,23 +1,21 @@
 <?php
 /**
- * HEIC Support
+ * Plugin Name: HEIC Support
+ * Description: Allows .heic uploads to the Media Library. Creates .webp or .jpg copies of .heic images when they are uploaded.
+ * Plugin URI: https://breakfastco.xyz/heic-support/
+ * Author: Breakfast
+ * Author URI: https://breakfastco.xyz/
+ * Version: 2.1.4
+ * Text-domain: heic-support
+ * License: GPLv2
+ * GitHub Plugin URI: https://github.com/csalzano/heic-support
+ * Primary Branch: main
  *
  * @author Corey Salzano <csalzano@duck.com>
  * @package HEIC_Support
  */
 
 defined( 'ABSPATH' ) || exit;
-
-/**
- * Plugin Name: HEIC Support
- * Description: Allows .heic uploads to the Media Library. Creates .webp or .jpg copies of .heic images when they are uploaded.
- * Plugin URI: https://breakfastco.xyz/heic-support/
- * Author: Breakfast
- * Author URI: https://breakfastco.xyz/
- * Version: 2.1.3
- * Text-domain: heic-support
- * License: GPLv2
- */
 
 if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 	/**
