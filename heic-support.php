@@ -59,6 +59,9 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			// Populates width, height, and other attributes in meta key _wp_attachment_metadata.
 			add_filter( 'wp_generate_attachment_metadata', array( $this, 'populate_meta' ), 10, 2 );
 
+			// Run our conversion test when users visit wp-admin/options-media.php.
+			add_action( 'admin_init', array( $this, 'test_run' ), 9 );
+
 			// Adds settings to the dashboard at Settings → Media.
 			add_action( 'admin_init', array( $this, 'add_settings' ) );
 
@@ -67,9 +70,6 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 
 			// Deletes the test image when the plugin is uninstalled.
 			register_uninstall_hook( __FILE__, array( __CLASS__, 'uninstall' ) );
-
-			// Run our conversion test when users visit wp-admin/options-media.php.
-			add_action( 'admin_enqueue_scripts', array( $this, 'test_run' ) );
 		}
 
 		/**
@@ -457,12 +457,12 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 * a message describing what happened in $this->test_result_html so it
 		 * can be retrieved.
 		 *
-		 * @param  string $hook_suffix The current admin page.
 		 * @return void
 		 */
-		public function test_run( $hook_suffix ) {
+		public function test_run() {
+			global $pagenow;
 			// Is this page wp-admin/options-media.php?
-			if ( 'options-media.php' !== $hook_suffix ) {
+			if ( 'options-media.php' !== $pagenow ) {
 				// No.
 				return;
 			}
