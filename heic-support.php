@@ -5,7 +5,7 @@
  * Plugin URI: https://breakfastco.xyz/heic-support/
  * Author: Breakfast
  * Author URI: https://breakfastco.xyz/
- * Version: 2.1.4
+ * Version: 2.2.0
  * Text-domain: heic-support
  * License: GPLv2
  * GitHub Plugin URI: https://github.com/csalzano/heic-support

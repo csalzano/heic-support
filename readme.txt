@@ -1,10 +1,10 @@
 === HEIC Support ===
 Contributors: salzano
-Donate link: https://coreysalzano.com/donate/
+Donate link: https://breakfastco.xyz/heic-support/
 Tags: heic, webp, iphone
 Requires at least: 5.9
-Tested up to: 6.8.3
-Stable tag: 2.1.4
+Tested up to: 7.0
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,10 @@ Check the page at Media → HEIC Support after activating to see if your server 
 1. The settings are located at Settings → Media → HEIC Support in the dashboard.
 
 == Changelog ==
+
+= 2.2.0 =
+* [Added] Optional, opt-in cloud conversion for servers without ImageMagick/libheif. Enter a license key and enable it at Settings → Media; converts .heic uploads via the Breakfast cloud conversion service using purchased credits. See the External services section.
+* [Changed] Changes the tested up to version to 7.0.
 
 = 2.1.4 =
 * [Fixed] Makes sure the test runs before the settings output is generated.
@@ -82,6 +86,9 @@ Check the page at Media → HEIC Support after activating to see if your server 
 
 == Upgrade Notice ==
 
+= 2.2.0 =
+Adds optional, opt-in cloud conversion for servers that can't convert .heic locally. No change to existing behavior unless you enable it.
+
 = 2.1.4 =
 Makes sure the test runs before the settings output is generated. Changes the tested up to version to 6.8.3.
 
@@ -95,10 +102,10 @@ Shows better error output when ImageMagick is installed on the server but conver
 Adds a screenshot of the plugin settings. Fixes a bug in the replace feature that prevented it from working in certain environments. Changes the tested up to version to 6.3.2.
 
 = 2.1.0 =
-Adds .jpg support. Adds a setting to toggle whether images are converted to webp or jpg. Defaults to webp. Show the settings section at Settings → Media even if ImageMagick is not installed. Explain to users that their host does not provide the library. Removes layers from the icon .svg file. Changes the tested up to version to 6.3.1.
+Adds .jpg support. Adds a setting to toggle whether images are converted to webp or jpg. Defaults to webp. Show the settings section at Settings → Media even if ImageMagick is not installed. Explain to users that their host does not provide the library. Changes the tested up to version to 6.3.1.
 
 = 2.0.0 =
-Moves all plugin settings from Media → HEIC Support to Settings → Media. Adds an optional feature to replace .heic images rather than create a copy. A switch enables the feature at Settings → Media. Changes the tested up to version to 6.2.0. Add filters around the webp format and image/webp mime type strings so they can be changed by other developers.
+Moves all plugin settings from Media → HEIC Support to Settings → Media. Adds an optional feature to replace .heic images rather than copy. Changes the tested up to version to 6.2.0. Add filters around the webp format and image/webp mime type strings.
 
 = 1.0.1 =
 Prevents an error on sites running PHP versions less than or equal to 7.2.
