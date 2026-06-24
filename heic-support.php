@@ -17,6 +17,10 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// Cloud conversion service endpoints.
+defined( 'HEIC_SUPPORT_STORE_URL' ) || define( 'HEIC_SUPPORT_STORE_URL', 'https://breakfastco.xyz' );
+defined( 'HEIC_SUPPORT_REMOTE_API_URL' ) || define( 'HEIC_SUPPORT_REMOTE_API_URL', 'https://heic.breakfastco.xyz/v1' );
+
 if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 	/**
 	 * Heic_Support_Plugin
@@ -223,6 +227,17 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 * @return void
 		 */
 		public function callback_format_setting() {
+			// Is the plugin's primary feature going to work?
+			if ( ! class_exists( 'Imagick' ) ) {
+				// No.
+				printf(
+					/* translators: 1. Anchor element opening tag. 2. Anchor element closing tag. */
+					esc_html__( 'This server cannot convert .heic images on its own, so the free conversion feature does not work with your web host. Use our cloud servers to convert your uploads for a few dollars in credits. Enter your license key below, or %1$sobtain one%2$s.', 'heic-support' ),
+					'<a href="https://breakfastco.xyz/heic-support/" target="_blank" rel="noopener">',
+					'</a>'
+				);
+				return;
+			}
 			$value = self::get_format();
 			printf(
 				'<fieldset><label for="heic_support_webp"><input type="radio" id="heic_support_webp" name="heic_support_format" value="webp" %1$s/> %2$s</label><br />'
@@ -265,17 +280,6 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 * @return void
 		 */
 		public function callback_section() {
-			// Is the plugin's primary feature going to work?
-			if ( ! class_exists( 'Imagick' ) ) {
-				// No.
-				printf(
-					/* translators: 1. Anchor element opening tag. 2. Anchor element closing tag. */
-					esc_html__( 'This server does not provide ImageMagick, and .heic images cannot be converted without it. Ask your web host to enable ImageMagick, or %1$sread our list of compatible hosts%2$s.', 'heic-support' ),
-					'<a href="https://breakfastco.xyz/heic-support/#hosting">',
-					'</a>'
-				);
-				return;
-			}
 			esc_html_e( 'Control how .heic images are handled during uploads.', 'heic-support' );
 		}
 
@@ -469,7 +473,8 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			if ( ! class_exists( 'Imagick' ) ) {
 				// Can't even try.
 				$this->test_success     = false;
-				$this->test_result_html = esc_html__( 'ImageMagick is not installed on this server. This plugin only works on servers running ImageMagick. Some hosts require a switch be flipped before the program is available to a site.', 'heic-support' );
+				Heic_Support_Cloud::cache_local_heic_supported( false );
+				$this->test_result_html = esc_html__( 'ImageMagick is not available on this server, so .heic images cannot be converted locally. You can use our cloud servers to convert your uploads on any host.', 'heic-support' );
 				return;
 			}
 
@@ -486,6 +491,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 					$name       = basename( $path );
 					// It worked!
 					$this->test_success     = true;
+					Heic_Support_Cloud::cache_local_heic_supported( true );
 					$this->test_result_html = sprintf(
 						'<figure><img src="%s" width="%d" /><figcaption>%s .%s.</figcaption></figure>',
 						esc_attr( $upload_dir['url'] . '/' . $name ),
@@ -499,14 +505,13 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 				$msg = 'no decode delegate for this image format `HEIC\'';
 				if ( false !== strpos( $ie->getMessage(), $msg ) ) {
 					$this->test_success     = false;
+					Heic_Support_Cloud::cache_local_heic_supported( false );
 					$this->test_result_html = sprintf(
-						/* translators: 1. An opening bold text tag <b>. 2. A closing bold text tag </b>. 3. An ImageMagick version string. 4. Anchor element opening tag. 5. Anchor element closing tag. */
-						esc_html__( '%1$sFailed%2$s. ImageMagick is installed, but does not support HEIC. You may upload .heic files, but they will not be converted. The version might be too old, or perhaps your server is missing libheif. Installed version is %3$s. %4$sRead our list of web hosts%5$s where this plugin has been tested.', 'heic-support' ),
+						/* translators: 1. An opening bold text tag <b>. 2. A closing bold text tag </b>. 3. An ImageMagick version string. */
+						esc_html__( '%1$sFailed%2$s. ImageMagick is installed, but does not support HEIC, so .heic uploads will not be converted locally (the version may be too old, or libheif is missing). Installed version is %3$s. You can convert your uploads on any host using our cloud conversion servers below.', 'heic-support' ),
 						'<b>',
 						'</b>',
-						esc_html( $this->imagemagick_version() ),
-						'<a href="https://breakfastco.xyz/heic-support/#hosting">',
-						'</a>'
+						esc_html( $this->imagemagick_version() )
 					);
 				}
 			}
@@ -555,6 +560,16 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			delete_option( 'heic_support_format' );
 			delete_option( 'heic_support_replace' );
 			delete_option( self::OPTION_TEST_IMAGE );
+
+			// Cloud conversion options + cached state.
+			delete_option( 'heic_support_license_key' );
+			delete_option( 'heic_support_cloud_enabled' );
+			delete_option( 'heic_support_cloud_force' );
+			delete_transient( Heic_Support_Cloud::LOCAL_WORKS_TRANSIENT );
+			delete_option( Heic_Support_Cloud::LOCAL_WORKS_TRANSIENT );
+			delete_transient( 'heic_support_credits_status' );
+			delete_transient( 'heic_support_credits_remaining' );
+			delete_transient( 'heic_support_notice' );
 		}
 
 		/**
@@ -583,3 +598,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 }
 $heic_support_plugin = new Heic_Support_Plugin();
 $heic_support_plugin->add_hooks();
+
+// Cloud conversion client. Only shown if the server does not support free conversion.
+require_once __DIR__ . '/includes/class-heic-support-cloud.php';
+( new Heic_Support_Cloud() )->add_hooks();

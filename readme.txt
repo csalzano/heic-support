@@ -17,6 +17,17 @@ Allows .heic uploads to the Media Library. Creates .webp or .jpg copies of .heic
 
 Creation of .webp or .jpg copies usually works on servers running ImageMagick 7 or above. Check Settings → Media → HEIC Support after activating to see if your server provides ImageMagick.
 
+**Optional cloud conversion (paid).** If your server cannot convert .heic images (no ImageMagick or no libheif), you can optionally convert uploads using a paid cloud conversion service. This requires purchasing conversion credits and entering a license key at Settings → Media. The free plugin works exactly as before without it. Cloud conversion is an additional, opt-in option, not a replacement for any existing feature.
+
+
+== External services ==
+
+This plugin's optional, opt-in cloud conversion feature connects to an external service operated by Breakfast (breakfastco.xyz). With no license key saved, the plugin does not contact any external service.
+
+**Credit balance checks.** After you save a license key at Settings → Media, the plugin may contact breakfastco.xyz to fetch your remaining conversion credit balance. This request is made when the settings page is displayed (and the result is cached for about 10 minutes) so the plugin can show how many credits you have left. It sends your license key and your site URL. This happens even if "Cloud Conversion" is not yet enabled.
+
+**Cloud conversion.** When you have saved a license key and enabled "Cloud Conversion" at Settings → Media, the plugin sends your license key and your site URL to breakfastco.xyz to reserve conversion credits and perform a conversions. The plugin uploads the .heic image file to the conversion server, which returns the converted .webp or .jpg image. Uploaded images are processed in memory and the temporary files are deleted immediately after conversion; they are not stored or shared.
+
 
 == Installation ==
 
