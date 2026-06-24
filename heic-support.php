@@ -126,6 +126,18 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 				)
 			);
 
+			/**
+			 * Format setting output. Checks for ImageMagick and shows a "sorry"
+			 * message if the free conversion is not going to work.
+			 */
+			add_settings_field(
+				'format',
+				__( 'Convert To', 'heic-support' ),
+				array( $this, 'callback_format_setting' ),
+				'media',
+				$section
+			);
+
 			// Is the plugin's primary feature going to work?
 			if ( ! class_exists( 'Imagick' ) ) {
 				// No. Do not output any of the options.
@@ -133,15 +145,6 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			}
 
 			if ( $this->test_success ) {
-				// Format setting output.
-				add_settings_field(
-					'format',
-					__( 'Convert To', 'heic-support' ),
-					array( $this, 'callback_format_setting' ),
-					'media',
-					$section
-				);
-
 				// Replace setting output.
 				add_settings_field(
 					'replace',
