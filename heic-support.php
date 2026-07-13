@@ -5,7 +5,7 @@
  * Plugin URI: https://breakfastco.xyz/heic-support/
  * Author: Breakfast
  * Author URI: https://breakfastco.xyz/
- * Version: 2.2.0
+ * Version: 2.2.1
  * Text-domain: heic-support
  * License: GPLv2
  * GitHub Plugin URI: https://github.com/csalzano/heic-support
@@ -232,12 +232,17 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		public function callback_format_setting() {
 			// Is the plugin's primary feature going to work?
 			if ( ! class_exists( 'Imagick' ) ) {
-				// No.
+				// No. Frame the cloud option around the benefit, with a clear next step.
 				printf(
 					/* translators: 1. Anchor element opening tag. 2. Anchor element closing tag. */
-					esc_html__( 'This server cannot convert .heic images on its own, so the free conversion feature does not work with your web host. Use our cloud servers to convert your uploads for a few dollars in credits. Enter your license key below, or %1$sobtain one%2$s.', 'heic-support' ),
-					'<a href="https://breakfastco.xyz/heic-support/" target="_blank" rel="noopener">',
-					'</a>'
+					'<p>%1$s</p><p>%2$s</p>',
+					esc_html__( 'Your web host can\'t convert .heic images on its own. They will upload, but won\'t display in most browsers.', 'heic-support' ),
+					sprintf(
+						/* translators: 1. Anchor element opening tag. 2. Anchor element closing tag. */
+						esc_html__( 'HEIC Support can convert them for you automatically in the cloud, on any host, without installing more software. One credit converts one image, and packs start at 3 conversions for $5.99. %1$sGet conversion credits%2$s, then add your license key below to switch it on.', 'heic-support' ),
+						'<a href="https://breakfastco.xyz/heic-support/" target="_blank" rel="noopener"><strong>',
+						'</strong></a>'
+					)
 				);
 				return;
 			}
