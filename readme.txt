@@ -38,7 +38,8 @@ Check the page at Media → HEIC Support after activating to see if your server 
 
 == Screenshots ==
 
-1. The settings are located at Settings → Media → HEIC Support in the dashboard.
+1. The settings at Settings > Media > HEIC Support in the dashboard on a server that supports free conversion to .jpg or .webp.
+2. The settings at Settings > Media > HEIC Support in the dashboard when the server does not support free conversion.
 
 == Changelog ==
 
