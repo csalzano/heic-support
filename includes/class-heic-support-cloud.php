@@ -161,12 +161,46 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 			if ( ! $file || 'heic' !== strtolower( pathinfo( $file, PATHINFO_EXTENSION ) ) ) {
 				return;
 			}
-			if ( ! $this->should_use_cloud( $post_id ) ) {
+
+			// If the server can convert .heic locally, the free path handles it.
+			$forced = filter_var( get_option( 'heic_support_cloud_force' ), FILTER_VALIDATE_BOOLEAN );
+			if ( self::local_heic_supported() && ! $forced ) {
 				return;
 			}
-			if ( ! wp_next_scheduled( self::EVENT, array( $post_id ) ) ) {
-				wp_schedule_single_event( time(), self::EVENT, array( $post_id ) );
+
+			// The server can't convert locally. Will the cloud handle this upload?
+			if ( $this->should_use_cloud( $post_id ) ) {
+				if ( ! wp_next_scheduled( self::EVENT, array( $post_id ) ) ) {
+					wp_schedule_single_event( time(), self::EVENT, array( $post_id ) );
+				}
+				return;
 			}
+
+			// Cloud isn't set up. Nudge once, but only if the server truly can't
+			// convert locally (guards the forced-but-locally-capable edge case).
+			if ( ! self::local_heic_supported() ) {
+				$this->maybe_upsell_notice();
+			}
+		}
+
+		/**
+		 * Sets a one-time notice when a .heic is uploaded on a server that can't
+		 * convert locally and cloud conversion isn't active yet. This turns a
+		 * silent failure (an .heic that won't display) into a clear next step.
+		 *
+		 * @return void
+		 */
+		private function maybe_upsell_notice() {
+			// Don't clobber a pending message (e.g. a real conversion error).
+			if ( get_transient( self::NOTICE_TRANSIENT ) ) {
+				return;
+			}
+			if ( '' !== self::license_key() ) {
+				$msg = __( 'A .heic image was uploaded, but this server can\'t convert it locally, so it won\'t display in most browsers. You have a license key saved. Turn on "Cloud Conversion" to convert uploads automatically.', 'heic-support' );
+			} else {
+				$msg = __( 'A .heic image was uploaded, but this server can\'t convert it locally, so it won\'t display in most browsers. Convert your uploads automatically on any host with cloud conversion. Packs start at 3 conversions for $5.99.', 'heic-support' );
+			}
+			$this->notice( $msg );
 		}
 
 		/**
@@ -506,8 +540,15 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 			$key      = self::license_key();
 
 			if ( '' === $key ) {
-				echo '<input type="text" class="regular-text" name="heic_support_license_key" value="" autocomplete="off" />';
-				printf( '<p class="description">%s</p>', esc_html__( 'Enter the license key from your credit purchase, then Save Changes.', 'heic-support' ) );
+				echo '<input type="text" class="regular-text" name="heic_support_license_key" value="" autocomplete="off" placeholder="' . esc_attr__( 'Paste your license key', 'heic-support' ) . '" />';
+				echo '<p class="description">';
+				printf(
+					/* translators: 1. Anchor opening tag. 2. Anchor closing tag. */
+					esc_html__( 'Already bought credits? Enter your license key and click Save Changes. Need credits? %1$sGet a pack of conversion credits%2$s. One credit converts one image, starting at 3 conversions for $5.99.', 'heic-support' ),
+					'<a href="' . esc_url( trailingslashit( HEIC_SUPPORT_STORE_URL ) . 'heic-support/' ) . '" target="_blank" rel="noopener"><strong>',
+					'</strong></a>'
+				);
+				echo '</p>';
 				return;
 			}
 
@@ -554,9 +595,10 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 		public function field_enable() {
 			$enabled = filter_var( get_option( 'heic_support_cloud_enabled' ), FILTER_VALIDATE_BOOLEAN );
 			printf(
-				'<label><input type="checkbox" name="heic_support_cloud_enabled" value="1" %s /> %s</label>',
+				'<label><input type="checkbox" name="heic_support_cloud_enabled" value="1" %s /> %s</label><p class="description">%s</p>',
 				checked( $enabled, true, false ),
-				esc_html__( 'Convert .heic uploads in the cloud (uses 1 credit per image).', 'heic-support' )
+				esc_html__( 'Automatically convert every new .heic upload in the cloud (uses 1 credit per image).', 'heic-support' ),
+				esc_html__( 'Turn this on after you have saved a license key with available credits.', 'heic-support' )
 			);
 		}
 
@@ -650,6 +692,10 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 		 * @return void
 		 */
 		public function maybe_show_notice() {
+			// The settings page requires this capability, so only prompt users who can act.
+			if ( ! current_user_can( 'manage_options' ) ) {
+				return;
+			}
 			$msg = get_transient( self::NOTICE_TRANSIENT );
 			if ( ! $msg ) {
 				return;
