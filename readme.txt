@@ -15,6 +15,8 @@ Add iPhone .heic photos to WordPress and auto-create .webp, .avif, or .jpg copie
 
 **Add iPhone photos to WordPress without the hassle.** HEIC Support lets you upload .heic and .heif images to the Media Library and automatically creates web-friendly .webp, .avif, or .jpg copies, so your photos actually display in every browser.
 
+https://youtu.be/iKW4mIjoVx8
+
 ### Free forever, and it just works ###
 
 The plugin is **free and works on thousands of sites** with no account, no key, and no limits. Most WordPress hosts already run ImageMagick 7 with libheif, which is all that is needed to convert .heic locally. After activating, open Settings → Media → HEIC Support to see a live test conversion for your own server.
