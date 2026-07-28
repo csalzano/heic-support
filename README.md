@@ -8,7 +8,8 @@ Creation of .webp, .avif, or .jpg copies usually works on servers running ImageM
 
 Saves attachment IDs in meta key `_heic_support_copy_of` on both the uploaded .heic and the generated .webp, .avif, or .jpg attachment posts.
 
-[![Watch the video](https://img.youtube.com/vi/iKW4mIjoVx8/default.jpg)](https://youtu.be/iKW4mIjoVx8)
+[![Watch the HEIC Support walkthrough on YouTube](https://img.youtube.com/vi/iKW4mIjoVx8/maxresdefault.jpg)](https://youtu.be/iKW4mIjoVx8)
+Watch on YouTube at [https://youtu.be/iKW4mIjoVx8](https://youtu.be/iKW4mIjoVx8)
 
 ## Screenshots
 
