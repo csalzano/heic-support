@@ -106,17 +106,17 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 		}
 
 		/**
-		 * Output format ('webp' or 'jpeg'), mirroring the main plugin's option.
+		 * Output format ('webp', 'avif', or 'jpeg'), mirroring the main plugin's option.
 		 *
 		 * @return string
 		 */
 		private function format() {
 			$v = get_option( 'heic_support_format' );
-			if ( empty( $v ) ) {
+			if ( ! in_array( $v, array( 'webp', 'jpeg', 'avif' ), true ) ) {
 				$v = 'webp';
 			}
 			$v = apply_filters( 'heic_support_format', $v );
-			return 'jpeg' === $v ? 'jpeg' : 'webp';
+			return in_array( $v, array( 'webp', 'jpeg', 'avif' ), true ) ? $v : 'webp';
 		}
 
 		/**
@@ -129,7 +129,7 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 			if ( 'jpeg' === $format ) {
 				return apply_filters( 'heic_support_extension', 'jpg' );
 			}
-			return 'webp';
+			return in_array( $format, array( 'avif', 'webp' ), true ) ? $format : 'webp';
 		}
 
 		/**
@@ -304,7 +304,7 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 				return $attach_id;
 			}
 			update_post_meta( $attach_id, '_wp_attached_file', $relative );
-			// Let WordPress build the registered sizes locally (GD handles WebP/JPG).
+			// Let WordPress build the registered sizes locally (GD handles WebP/AVIF/JPG).
 			wp_update_attachment_metadata( $attach_id, wp_generate_attachment_metadata( $attach_id, $dest ) );
 
 			update_post_meta( $attach_id, '_heic_support_copy_of', $heic_id );

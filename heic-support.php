@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: HEIC Support
- * Description: Allows .heic uploads to the Media Library. Creates .webp or .jpg copies of .heic images when they are uploaded.
+ * Description: Allows .heic uploads to the Media Library. Creates .webp, .avif, or .jpg copies of .heic images when they are uploaded.
  * Plugin URI: https://breakfastco.xyz/heic-support/
  * Author: Breakfast
  * Author URI: https://breakfastco.xyz/
- * Version: 2.2.1
+ * Version: 2.3.0
  * Text-domain: heic-support
  * License: GPLv2
  * GitHub Plugin URI: https://github.com/csalzano/heic-support
@@ -187,7 +187,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 
 		/**
 		 * Returns the file extension to which .heic images are converted.
-		 * Either "jpg" or "webp".
+		 * Either "jpg", "webp", or "avif".
 		 *
 		 * @return string
 		 */
@@ -201,13 +201,13 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 
 		/**
 		 * Retrieves the file format to which .heic images are converted from
-		 * the option where it is stored. Either "jpeg" or "webp".
+		 * the option where it is stored. Either "jpeg", "webp", or "avif".
 		 *
 		 * @return string
 		 */
 		protected static function get_format() {
 			$value = get_option( 'heic_support_format' );
-			if ( empty( $value ) ) {
+			if ( ! in_array( $value, array( 'webp', 'jpeg', 'avif' ), true ) ) {
 				$value = 'webp';
 			}
 			return apply_filters( 'heic_support_format', $value );
@@ -249,9 +249,12 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			$value = self::get_format();
 			printf(
 				'<fieldset><label for="heic_support_webp"><input type="radio" id="heic_support_webp" name="heic_support_format" value="webp" %1$s/> %2$s</label><br />'
-				. '<label for="heic_support_jpeg"><input type="radio" id="heic_support_jpeg" name="heic_support_format" value="jpeg" %3$s/> %4$s</label></fieldset>',
+				. '<label for="heic_support_avif"><input type="radio" id="heic_support_avif" name="heic_support_format" value="avif" %3$s/> %4$s</label><br />'
+				. '<label for="heic_support_jpeg"><input type="radio" id="heic_support_jpeg" name="heic_support_format" value="jpeg" %5$s/> %6$s</label></fieldset>',
 				checked( $value, 'webp', false ),
 				esc_html__( '.webp', 'heic-support' ),
+				checked( $value, 'avif', false ),
+				esc_html__( '.avif', 'heic-support' ),
 				checked( $value, 'jpeg', false ),
 				esc_html__( '.jpg', 'heic-support' )
 			);

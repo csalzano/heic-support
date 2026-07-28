@@ -41,6 +41,10 @@ msgstr ".jpg"
 msgid ".webp"
 msgstr ".webp"
 
+#: heic-support.php
+msgid ".avif"
+msgstr ".avif"
+
 #: heic-support.php:137
 msgid "Convert To"
 msgstr "Преобразовать в"
@@ -92,8 +96,8 @@ msgstr "https://breakfastco.xyz/"
 
 #. Description of the plugin
 #: heic-support.php
-msgid "Allows .heic uploads to the Media Library. Creates .webp or .jpg copies of .heic images when they are uploaded."
-msgstr "Позволяет загружать файлы .heic в медиатеку. Создает копии изображений в формате .webp или .jpg при их загрузке."
+msgid "Allows .heic uploads to the Media Library. Creates .webp, .avif, or .jpg copies of .heic images when they are uploaded."
+msgstr "Позволяет загружать файлы .heic в медиатеку. Создает копии изображений в формате .webp, .avif или .jpg при их загрузке."
 
 #. Plugin Name of the plugin
 #: heic-support.php heic-support.php:98

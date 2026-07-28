@@ -1,33 +1,33 @@
 === HEIC Support ===
 Contributors: salzano
 Donate link: https://breakfastco.xyz/heic-support/
-Tags: heic, heif, webp, iphone, convert
+Tags: heic, heif, webp, avif, iphone, convert
 Requires at least: 5.9
 Tested up to: 7.0
-Stable tag: 2.2.1
+Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Add iPhone .heic photos to WordPress and auto-create .webp or .jpg copies. Free forever on thousands of sites; optional cloud conversion for any host.
+Add iPhone .heic photos to WordPress and auto-create .webp, .avif, or .jpg copies. Free forever on thousands of sites; optional cloud conversion for any host.
 
 
 == Description ==
 
-**Add iPhone photos to WordPress without the hassle.** HEIC Support lets you upload .heic and .heif images to the Media Library and automatically creates web-friendly .webp or .jpg copies, so your photos actually display in every browser.
+**Add iPhone photos to WordPress without the hassle.** HEIC Support lets you upload .heic and .heif images to the Media Library and automatically creates web-friendly .webp, .avif, or .jpg copies, so your photos actually display in every browser.
 
 ### Free forever, and it just works ###
 
 The plugin is **free and works on thousands of sites** with no account, no key, and no limits. Most WordPress hosts already run ImageMagick 7 with libheif, which is all that is needed to convert .heic locally. After activating, open Settings → Media → HEIC Support to see a live test conversion for your own server.
 
 * Allows .heic and .heif uploads to the Media Library
-* Automatically creates a .webp or .jpg copy of every .heic upload
+* Automatically creates a .webp, .avif, or .jpg copy of every .heic upload
 * Optionally replaces the original upload instead of keeping a copy
-* Choose your output format: .webp (smaller files) or .jpg (most compatible)
+* Choose your output format: .avif (smallest files), .webp (smaller files), or .jpg (most compatible)
 * No configuration required. Just activate and upload
 
 ### Host can't convert? Convert on any server (optional, paid) ###
 
-Some budget or locked-down hosts don't include the libraries needed to read .heic. If the test at Settings → Media shows your server can't convert on its own, HEIC Support can hand the job to our cloud conversion service, so your uploads still get a .webp or .jpg copy on any host, without installing more software.
+Some budget or locked-down hosts don't include the libraries needed to read .heic. If the test at Settings → Media shows your server can't convert on its own, HEIC Support can hand the job to our cloud conversion service, so your uploads still get a .webp, .avif, or .jpg copy on any host, without installing more software.
 
 Cloud conversion is entirely optional and opt-in. You only need it if your server can't convert locally. Buy a pack of conversion credits, paste your license key at Settings → Media, and switch it on. One credit converts one image, and packs start at 3 conversions for $5.99. [Get conversion credits](https://breakfastco.xyz/heic-support/).
 
@@ -47,16 +47,21 @@ This plugin's optional, opt-in cloud conversion feature connects to an external 
 
 **Credit balance checks.** After you save a license key at Settings → Media, the plugin may contact breakfastco.xyz to fetch your remaining conversion credit balance. This request is made when the settings page is displayed (and the result is cached for about 10 minutes) so the plugin can show how many credits you have left. It sends your license key and your site URL. This happens even if "Cloud Conversion" is not yet enabled.
 
-**Cloud conversion.** When you have saved a license key and enabled "Cloud Conversion" at Settings → Media, the plugin sends your license key and your site URL to breakfastco.xyz to reserve conversion credits and perform a conversion. The plugin uploads the .heic image file to the conversion server, which returns the converted .webp or .jpg image. Uploaded images are processed in memory and the temporary files are deleted immediately after conversion; they are not stored or shared.
+**Cloud conversion.** When you have saved a license key and enabled "Cloud Conversion" at Settings → Media, the plugin sends your license key and your site URL to breakfastco.xyz to reserve conversion credits and perform a conversion. The plugin uploads the .heic image file to the conversion server, which returns the converted .webp, .avif, or .jpg image. Uploaded images are processed in memory and the temporary files are deleted immediately after conversion; they are not stored or shared.
 
 Use of the cloud conversion service is governed by the Breakfast Privacy Policy (https://breakfastco.xyz/privacy-policy/).
 
 == Screenshots ==
 
-1. The settings at Settings > Media > HEIC Support in the dashboard on a server that supports free conversion to .jpg or .webp.
+1. The settings at Settings > Media > HEIC Support in the dashboard on a server that supports free conversion to .webp, .avif, or .jpg.
 2. The settings at Settings > Media > HEIC Support in the dashboard when the server does not support free conversion.
 
 == Changelog ==
+
+= 2.3.0 =
+* [Added] Adds .avif as an output format option alongside .webp and .jpg.
+* [Added] Shows a dismissible warning right in the uploader when a .heic is added on a server that cannot convert locally and does not have cloud conversion set up, so the upload no longer fails silently.
+* [Removed] Removes admin notices from the dashboard; feedback now appears in the uploader instead.
 
 = 2.2.1 =
 * [Fixed] Shows a dismissible notice after a .heic is uploaded on a server that cannot convert locally and does not have cloud conversion set up, so the upload no longer fails silently.
@@ -105,6 +110,12 @@ Use of the cloud conversion service is governed by the Breakfast Privacy Policy 
 * [Added] First public version. Adds `.heic` support to WordPress. If ImageMagick 7 or above is installed, creates `.webp` copies of `.heic` images uploaded to the Media Library.
 
 == Upgrade Notice ==
+
+= 2.3.0 =
+Adds .avif as an output format option (local and cloud) alongside .webp and .jpg.
+
+= 2.2.2 =
+Moves the "can't convert" feedback into the uploader itself and removes dashboard admin notices.
 
 = 2.2.1 =
 Shows a dismissible notice after a .heic is uploaded on a server that cannot convert locally and does not have cloud conversion set up, so the upload no longer fails silently.
