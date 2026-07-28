@@ -19,7 +19,6 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 
 		const EVENT             = 'heic_support_cloud_convert';
 		const META_CONVERTED    = '_heic_support_cloud_converted';
-		const NOTICE_TRANSIENT  = 'heic_support_notice';
 		const STATUS_TRANSIENT  = 'heic_support_credits_status';
 		const LOCAL_WORKS_TRANSIENT = 'heic_support_local_works';
 
@@ -33,7 +32,6 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 			add_action( self::EVENT, array( $this, 'cloud_convert' ), 10, 3 );
 			add_action( 'admin_init', array( $this, 'register_settings' ), 11 );
 			add_action( 'admin_post_heic_support_remove_license', array( $this, 'handle_remove_license' ) );
-			add_action( 'admin_notices', array( $this, 'maybe_show_notice' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_uploader_notice' ) );
 		}
 
@@ -221,7 +219,7 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 				}
 			}
 			// If cloud isn't set up, the inline uploader warning (enqueued on the
-			// upload screens) handles feedback instead of a delayed admin notice.
+			// upload screens) handles feedback. No dashboard-wide admin notice.
 		}
 
 		/**
@@ -251,7 +249,6 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 			if ( '' === $ticket ) {
 				$consume = $this->api_consume();
 				if ( is_wp_error( $consume ) ) {
-					$this->notice( $consume->get_error_message() );
 					return;
 				}
 				$ticket = $consume['ticket'];
@@ -263,8 +260,6 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 				$retryable = in_array( $dest->get_error_code(), array( 'busy', 'api_unreachable' ), true );
 				if ( $retryable && $attempts < 3 ) {
 					wp_schedule_single_event( time() + 120, self::EVENT, array( $heic_id, $ticket, $attempts + 1 ) );
-				} else {
-					$this->notice( __( 'HEIC Support cloud conversion failed for this image.', 'heic-support' ) );
 				}
 				return;
 			}
@@ -275,7 +270,6 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 				: $this->import_converted( $heic_id, $dest, $format );
 
 			if ( is_wp_error( $result ) || ! $result ) {
-				$this->notice( __( 'Cloud conversion succeeded, but the converted image could not be added to the Media Library.', 'heic-support' ) );
 				return;
 			}
 			update_post_meta( $heic_id, self::META_CONVERTED, $result );
@@ -694,40 +688,6 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 					'remaining' => (int) $remaining,
 				),
 				10 * MINUTE_IN_SECONDS
-			);
-		}
-
-		/**
-		 * Stores a one-shot admin notice (background events have no UI).
-		 *
-		 * @param  string $msg Message.
-		 * @return void
-		 */
-		private function notice( $msg ) {
-			set_transient( self::NOTICE_TRANSIENT, $msg, DAY_IN_SECONDS );
-		}
-
-		/**
-		 * Prints and clears any pending notice.
-		 *
-		 * @return void
-		 */
-		public function maybe_show_notice() {
-			// The settings page requires this capability, so only prompt users who can act.
-			if ( ! current_user_can( 'manage_options' ) ) {
-				return;
-			}
-			$msg = get_transient( self::NOTICE_TRANSIENT );
-			if ( ! $msg ) {
-				return;
-			}
-			delete_transient( self::NOTICE_TRANSIENT );
-			printf(
-				'<div class="notice notice-warning is-dismissible"><p><strong>%1$s</strong> %2$s <a href="%3$s">%4$s</a></p></div>',
-				esc_html__( 'HEIC Support:', 'heic-support' ),
-				esc_html( $msg ),
-				esc_url( admin_url( 'options-media.php' ) ),
-				esc_html__( 'Cloud conversion settings', 'heic-support' )
 			);
 		}
 
