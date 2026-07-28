@@ -34,6 +34,52 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 			add_action( 'admin_init', array( $this, 'register_settings' ), 11 );
 			add_action( 'admin_post_heic_support_remove_license', array( $this, 'handle_remove_license' ) );
 			add_action( 'admin_notices', array( $this, 'maybe_show_notice' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_uploader_notice' ) );
+		}
+
+		/**
+		 * Whether cloud conversion is set up (license saved and enabled).
+		 *
+		 * @return bool
+		 */
+		private function cloud_active() {
+			return '' !== self::license_key()
+				&& filter_var( get_option( 'heic_support_cloud_enabled' ), FILTER_VALIDATE_BOOLEAN );
+		}
+
+		/**
+		 * Enqueues the uploader script that warns, inline and immediately, when a
+		 * .heic is added on a server that can't convert it and has no cloud set up.
+		 *
+		 * @param  string $hook Current admin page hook suffix.
+		 * @return void
+		 */
+		public function enqueue_uploader_notice( $hook ) {
+			$screens = array( 'media-new.php', 'upload.php', 'post.php', 'post-new.php' );
+			if ( ! in_array( $hook, $screens, true ) ) {
+				return;
+			}
+			// Only servers that can't convert locally and haven't set up cloud.
+			if ( self::local_heic_supported() || $this->cloud_active() ) {
+				return;
+			}
+
+			$src  = plugins_url( 'assets/heic-support-uploader.js', dirname( __DIR__ ) . '/heic-support.php' );
+			$path = dirname( __DIR__ ) . '/assets/heic-support-uploader.js';
+			$ver  = file_exists( $path ) ? (string) filemtime( $path ) : false;
+
+			wp_enqueue_script( 'heic-support-uploader', $src, array( 'jquery', 'plupload' ), $ver, true );
+			wp_localize_script(
+				'heic-support-uploader',
+				'heicSupportUploader',
+				array(
+					'title'    => __( 'HEIC Support:', 'heic-support' ),
+					'message'  => __( "This server can't convert .heic images, so this upload won't display in most browsers. You can convert automatically in the cloud on any host.", 'heic-support' ),
+					'linkText' => __( 'Learn more at Settings → Media', 'heic-support' ),
+					'url'      => admin_url( 'options-media.php' ),
+					'dismiss'  => __( 'Dismiss this notice.', 'heic-support' ),
+				)
+			);
 		}
 
 		/* --------------------------------------------------------------------- */
@@ -173,34 +219,9 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 				if ( ! wp_next_scheduled( self::EVENT, array( $post_id ) ) ) {
 					wp_schedule_single_event( time(), self::EVENT, array( $post_id ) );
 				}
-				return;
 			}
-
-			// Cloud isn't set up. Nudge once, but only if the server truly can't
-			// convert locally (guards the forced-but-locally-capable edge case).
-			if ( ! self::local_heic_supported() ) {
-				$this->maybe_upsell_notice();
-			}
-		}
-
-		/**
-		 * Sets a one-time notice when a .heic is uploaded on a server that can't
-		 * convert locally and cloud conversion isn't active yet. This turns a
-		 * silent failure (an .heic that won't display) into a clear next step.
-		 *
-		 * @return void
-		 */
-		private function maybe_upsell_notice() {
-			// Don't clobber a pending message (e.g. a real conversion error).
-			if ( get_transient( self::NOTICE_TRANSIENT ) ) {
-				return;
-			}
-			if ( '' !== self::license_key() ) {
-				$msg = __( 'A .heic image was uploaded, but this server can\'t convert it locally, so it won\'t display in most browsers. You have a license key saved. Turn on "Cloud Conversion" to convert uploads automatically.', 'heic-support' );
-			} else {
-				$msg = __( 'A .heic image was uploaded, but this server can\'t convert it locally, so it won\'t display in most browsers. Convert your uploads automatically on any host with cloud conversion. Packs start at 3 conversions for $5.99.', 'heic-support' );
-			}
-			$this->notice( $msg );
+			// If cloud isn't set up, the inline uploader warning (enqueued on the
+			// upload screens) handles feedback instead of a delayed admin notice.
 		}
 
 		/**
