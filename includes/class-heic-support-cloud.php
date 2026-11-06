@@ -150,7 +150,8 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 		public static function local_heic_supported() {
 			$cached = get_transient( self::LOCAL_WORKS_TRANSIENT );
 			if ( false !== $cached ) {
-				return (bool) $cached;
+				// Stored as '1' or '0'. A plain (bool) cast treats '0' as true.
+				return in_array( $cached, array( '1', 1, true ), true );
 			}
 			delete_option( self::LOCAL_WORKS_TRANSIENT );
 
