@@ -81,6 +81,7 @@ Only if your web host does not support local HEIC conversion. After activating, 
 = 2.3.1 =
 * [Fixed] Converts a cloud .heic upload before WordPress answers the upload request, so the media modal receives a displayable image. Croppers that open immediately, including Dokan's product photo editor, no longer get a blank preview.
 * [Fixed] Reads the cached local-conversion test correctly. The stored value "0" was being treated as success, which could skip cloud conversion after the first check.
+* [Fixed] Shows the cloud settings section even on servers that can convert locally, so a saved license key or force flag can still be managed or removed.
 * [Changed] Changes the tested up to version to 7.1.4.
 
 = 2.3.0 =
@@ -137,7 +138,7 @@ Only if your web host does not support local HEIC conversion. After activating, 
 == Upgrade Notice ==
 
 = 2.3.1 =
-Cloud conversion finishes during the upload, so the image is ready for the media modal and cropper immediately.
+Cloud conversion finishes during the upload, so the image is ready for the media modal and cropper immediately. Achieves compatibility with Dokan Pro's add product screen.
 
 = 2.3.0 =
 Adds .avif as an output format option (local and cloud) alongside .webp and .jpg.
