@@ -496,9 +496,10 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 		 * @return void
 		 */
 		public function register_settings() {
-			// Only offer the paid cloud option to servers that can't convert HEIC
-			// locally. Hosts with working ImageMagick + libheif never see it.
-			if ( self::local_heic_supported() ) {
+			// Hosts that can convert HEIC locally never see the paid option, unless
+			// a key or the force flag is already stored (so it can be managed).
+			$forced = filter_var( get_option( 'heic_support_cloud_force' ), FILTER_VALIDATE_BOOLEAN );
+			if ( self::local_heic_supported() && '' === self::license_key() && ! $forced ) {
 				return;
 			}
 
