@@ -4,7 +4,9 @@
  *
  * Additive serviceware: when local ImageMagick can't convert HEIC (or the user
  * forces it), uploads are converted by the Breakfast cloud API using purchased
- * credits. The local path in heic-support.php is untouched.
+ * credits. Conversion runs inside the upload request so the attachment the
+ * media modal receives is already a browser-displayable image. The local path
+ * in heic-support.php is untouched.
  *
  * @package HEIC_Support
  */
@@ -19,8 +21,26 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 
 		const EVENT             = 'heic_support_cloud_convert';
 		const META_CONVERTED    = '_heic_support_cloud_converted';
+		const META_ORIGINAL     = '_heic_support_original_file';
 		const STATUS_TRANSIENT  = 'heic_support_credits_status';
 		const LOCAL_WORKS_TRANSIENT = 'heic_support_local_works';
+
+		/**
+		 * HEIC attachment IDs that still need a cloud conversion this request.
+		 * Inline conversion clears an ID. Anything left at shutdown is scheduled
+		 * the old way, for uploads that never generate attachment metadata.
+		 *
+		 * @var array<int, bool>
+		 */
+		private $pending = array();
+
+		/**
+		 * True while a cloud conversion is installing its file, so metadata
+		 * generation for that file does not start another conversion.
+		 *
+		 * @var bool
+		 */
+		private $converting = false;
 
 		/**
 		 * Registers hooks.
@@ -29,6 +49,10 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 		 */
 		public function add_hooks() {
 			add_action( 'add_attachment', array( $this, 'maybe_schedule_cloud' ), 12 );
+			// After core and the local converter have had a chance to write a JPEG.
+			add_filter( 'wp_generate_attachment_metadata', array( $this, 'convert_during_upload' ), 20, 2 );
+			add_action( 'shutdown', array( $this, 'schedule_pending' ) );
+			add_action( 'delete_attachment', array( $this, 'delete_preserved_original' ) );
 			add_action( self::EVENT, array( $this, 'cloud_convert' ), 10, 3 );
 			add_action( 'admin_init', array( $this, 'register_settings' ), 11 );
 			add_action( 'admin_post_heic_support_remove_license', array( $this, 'handle_remove_license' ) );
@@ -196,53 +220,133 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 		/* --------------------------------------------------------------------- */
 
 		/**
-		 * Schedules a background cloud conversion when local can't handle the upload.
+		 * Remembers a HEIC that needs cloud conversion.
+		 *
+		 * The conversion itself runs in convert_during_upload(), before WordPress
+		 * answers the upload request. Scheduling here would leave Dokan's cropper
+		 * (and any other media modal) holding the .heic URL until a later request.
 		 *
 		 * @param  int $post_id Attachment ID.
 		 * @return void
 		 */
 		public function maybe_schedule_cloud( $post_id ) {
 			$file = get_attached_file( $post_id );
-			if ( ! $file || 'heic' !== strtolower( pathinfo( $file, PATHINFO_EXTENSION ) ) ) {
+			if ( ! $file || 'heic' !== strtolower( (string) pathinfo( $file, PATHINFO_EXTENSION ) ) ) {
 				return;
 			}
-
-			// If the server can convert .heic locally, the free path handles it.
-			$forced = filter_var( get_option( 'heic_support_cloud_force' ), FILTER_VALIDATE_BOOLEAN );
-			if ( self::local_heic_supported() && ! $forced ) {
+			if ( ! $this->should_use_cloud( $post_id ) ) {
 				return;
 			}
+			$this->pending[ (int) $post_id ] = true;
+		}
 
-			// The server can't convert locally. Will the cloud handle this upload?
-			if ( $this->should_use_cloud( $post_id ) ) {
+		/**
+		 * Converts a just-uploaded HEIC before the upload response is built.
+		 *
+		 * WordPress calls this while media_handle_upload() (and the REST media
+		 * endpoint) are still building the attachment. Dokan's product photo
+		 * modal then reads that attachment's URL into the cropper. The URL has
+		 * to be a JPEG, WebP, or AVIF already; a .heic paints as a blank thumb
+		 * and a white crop surface in browsers that cannot decode HEIC.
+		 *
+		 * @param  array $metadata      Attachment metadata. Empty when the server cannot read the HEIC.
+		 * @param  int   $attachment_id Attachment ID.
+		 * @return array
+		 */
+		public function convert_during_upload( $metadata, $attachment_id ) {
+			if ( $this->converting ) {
+				return $metadata;
+			}
+			$attachment_id = (int) $attachment_id;
+			$file          = get_attached_file( $attachment_id );
+			$extension     = strtolower( (string) pathinfo( (string) $file, PATHINFO_EXTENSION ) );
+			$is_heic       = in_array( $extension, array( 'heic', 'heif' ), true );
+
+			if ( ! $is_heic || $this->metadata_is_displayable( $metadata ) || ! $this->should_use_cloud( $attachment_id ) ) {
+				unset( $this->pending[ $attachment_id ] );
+				return $metadata;
+			}
+
+			unset( $this->pending[ $attachment_id ] );
+			$converted = $this->cloud_convert( $attachment_id );
+			if ( is_array( $converted ) && ! empty( $converted['file'] ) ) {
+				return $converted;
+			}
+			return $metadata;
+		}
+
+		/**
+		 * Schedules conversions that never reached convert_during_upload().
+		 *
+		 * @return void
+		 */
+		public function schedule_pending() {
+			foreach ( array_keys( $this->pending ) as $post_id ) {
 				if ( ! wp_next_scheduled( self::EVENT, array( $post_id ) ) ) {
 					wp_schedule_single_event( time(), self::EVENT, array( $post_id ) );
 				}
 			}
-			// If cloud isn't set up, the inline uploader warning (enqueued on the
-			// upload screens) handles feedback. No dashboard-wide admin notice.
+			$this->pending = array();
 		}
 
 		/**
-		 * Background event: consume -> convert -> import/replace.
+		 * Whether metadata already points at a browser-displayable image.
+		 *
+		 * Core does this itself when ImageMagick can decode HEIC: the attached
+		 * file becomes a JPEG (often "-scaled.jpg") before this filter runs.
+		 *
+		 * @param  mixed $metadata Attachment metadata.
+		 * @return bool
+		 */
+		private function metadata_is_displayable( $metadata ) {
+			if ( ! is_array( $metadata ) || empty( $metadata['width'] ) || empty( $metadata['file'] ) ) {
+				return false;
+			}
+			$extension = strtolower( (string) pathinfo( $metadata['file'], PATHINFO_EXTENSION ) );
+			return ! in_array( $extension, array( 'heic', 'heif' ), true );
+		}
+
+		/**
+		 * Consumes a credit, converts, and points the same attachment at the result.
 		 *
 		 * Transient failures (busy / unreachable) are retried with the SAME
 		 * ticket, because the server only marks a ticket used once it actually
-		 * converts. So, a credit isn't spent without a conversion. There is no
+		 * converts. A credit isn't spent without a conversion. There is no
 		 * refund endpoint; a genuine hard failure costs the credit.
 		 *
 		 * @param  int    $heic_id  Attachment ID.
 		 * @param  string $ticket   Existing ticket to reuse on a retry.
 		 * @param  int    $attempts Retry count.
-		 * @return void
+		 * @return array|null Attachment metadata for the converted file, or null when nothing was installed.
 		 */
 		public function cloud_convert( $heic_id, $ticket = '', $attempts = 0 ) {
+			if ( $this->converting ) {
+				return null;
+			}
+			$this->converting = true;
+			$metadata         = $this->perform_cloud_convert( $heic_id, $ticket, $attempts );
+			$this->converting = false;
+			return $metadata;
+		}
+
+		/**
+		 * Body of cloud_convert(), split so the re-entry guard always clears.
+		 *
+		 * @param  int    $heic_id  Attachment ID.
+		 * @param  string $ticket   Existing ticket to reuse on a retry.
+		 * @param  int    $attempts Retry count.
+		 * @return array|null
+		 */
+		private function perform_cloud_convert( $heic_id, $ticket, $attempts ) {
 			if ( ! $this->should_use_cloud( $heic_id ) ) {
-				return;
+				return null;
 			}
 			$file = get_attached_file( $heic_id );
 			if ( ! $file || ! file_exists( $file ) ) {
-				return;
+				return null;
+			}
+			if ( function_exists( 'set_time_limit' ) ) {
+				set_time_limit( 180 );
 			}
 			$format = $this->format();
 
@@ -250,7 +354,7 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 			if ( '' === $ticket ) {
 				$consume = $this->api_consume();
 				if ( is_wp_error( $consume ) ) {
-					return;
+					return null;
 				}
 				$ticket = $consume['ticket'];
 			}
@@ -262,86 +366,102 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 				if ( $retryable && $attempts < 3 ) {
 					wp_schedule_single_event( time() + 120, self::EVENT, array( $heic_id, $ticket, $attempts + 1 ) );
 				}
-				return;
+				return null;
 			}
+
+			$metadata = $this->install_converted( $heic_id, $dest, $format, $file );
+			if ( ! is_array( $metadata ) || empty( $metadata['file'] ) ) {
+				return null;
+			}
+			update_post_meta( $heic_id, self::META_CONVERTED, $heic_id );
+			wp_clear_scheduled_hook( self::EVENT, array( $heic_id ) );
+			return $metadata;
+		}
+
+		/**
+		 * Points the uploaded attachment at the converted file and builds sizes.
+		 *
+		 * The media modal is already bound to this attachment ID. A second
+		 * library item, created later by cron, is what vendors had to go back
+		 * and select. Keeping the ID stable makes Select and Crop load the
+		 * converted image on the first open.
+		 *
+		 * Replace mode deletes the .heic. Otherwise the original file stays on
+		 * disk, recorded in meta, and is removed with the attachment.
+		 *
+		 * @param  int    $heic_id   Attachment ID.
+		 * @param  string $dest      Converted file path.
+		 * @param  string $format    Format (jpeg, webp, or avif).
+		 * @param  string $heic_file Original HEIC path, captured before the swap.
+		 * @return array|null Metadata, or null when the converted file is missing.
+		 */
+		private function install_converted( $heic_id, $dest, $format, $heic_file ) {
+			if ( ! file_exists( $dest ) ) {
+				return null;
+			}
+			require_once ABSPATH . 'wp-admin/includes/image.php';
 
 			$replace = filter_var( get_option( 'heic_support_replace' ), FILTER_VALIDATE_BOOLEAN );
-			$result  = $replace
-				? $this->replace_original( $heic_id, $dest, $format )
-				: $this->import_converted( $heic_id, $dest, $format );
 
-			if ( is_wp_error( $result ) || ! $result ) {
-				return;
-			}
-			update_post_meta( $heic_id, self::META_CONVERTED, $result );
-		}
-
-		/**
-		 * Copy mode: add the converted file as a new, linked attachment.
-		 *
-		 * @param  int    $heic_id Original HEIC attachment ID.
-		 * @param  string $dest    Converted file path.
-		 * @param  string $format  Format.
-		 * @return int|WP_Error New attachment ID.
-		 */
-		private function import_converted( $heic_id, $dest, $format ) {
-			require_once ABSPATH . 'wp-admin/includes/image.php';
-
-			$uploads  = wp_get_upload_dir();
-			$relative = ltrim( str_replace( $uploads['basedir'], '', $dest ), '/' );
-			$parent   = wp_get_post_parent_id( $heic_id );
-
-			$attach_id = wp_insert_attachment(
-				array(
-					'post_mime_type' => 'image/' . $format,
-					'post_title'     => get_the_title( $heic_id ),
-					'post_status'    => 'inherit',
-				),
-				$dest,
-				$parent ? $parent : 0,
-				true
-			);
-			if ( is_wp_error( $attach_id ) || ! $attach_id ) {
-				return $attach_id;
-			}
-			update_post_meta( $attach_id, '_wp_attached_file', $relative );
-			// Let WordPress build the registered sizes locally (GD handles WebP/AVIF/JPG).
-			wp_update_attachment_metadata( $attach_id, wp_generate_attachment_metadata( $attach_id, $dest ) );
-
-			update_post_meta( $attach_id, '_heic_support_copy_of', $heic_id );
-			update_post_meta( $heic_id, '_heic_support_copy_of', $attach_id );
-			return (int) $attach_id;
-		}
-
-		/**
-		 * Replace mode: point the original attachment at the converted file and
-		 * delete the .heic. Async copy-then-swap (not in-place during upload).
-		 *
-		 * @param  int    $heic_id Attachment ID.
-		 * @param  string $dest    Converted file path.
-		 * @param  string $format  Format.
-		 * @return int|WP_Error Attachment ID.
-		 */
-		private function replace_original( $heic_id, $dest, $format ) {
-			require_once ABSPATH . 'wp-admin/includes/image.php';
-
-			$heic_file = get_attached_file( $heic_id );
-			$uploads   = wp_get_upload_dir();
-			$relative  = ltrim( str_replace( $uploads['basedir'], '', $dest ), '/' );
-
-			update_post_meta( $heic_id, '_wp_attached_file', $relative );
+			update_attached_file( $heic_id, $dest );
 			wp_update_post(
 				array(
 					'ID'             => $heic_id,
 					'post_mime_type' => 'image/' . $format,
 				)
 			);
-			wp_update_attachment_metadata( $heic_id, wp_generate_attachment_metadata( $heic_id, $dest ) );
 
-			if ( $heic_file && file_exists( $heic_file ) && realpath( $heic_file ) !== realpath( $dest ) ) {
+			if ( ! $replace && $heic_file && file_exists( $heic_file ) && realpath( $heic_file ) !== realpath( $dest ) ) {
+				update_post_meta( $heic_id, self::META_ORIGINAL, _wp_relative_upload_path( $heic_file ) );
+			}
+
+			$metadata = wp_create_image_subsizes( $dest, $heic_id );
+			if ( ! is_array( $metadata ) || empty( $metadata['width'] ) ) {
+				$size     = wp_getimagesize( $dest );
+				$metadata = array(
+					'file'     => _wp_relative_upload_path( $dest ),
+					'width'    => $size ? (int) $size[0] : 0,
+					'height'   => $size ? (int) $size[1] : 0,
+					'filesize' => wp_filesize( $dest ),
+					'sizes'    => array(),
+				);
+				wp_update_attachment_metadata( $heic_id, $metadata );
+			}
+
+			if ( $replace && $heic_file && file_exists( $heic_file ) && realpath( $heic_file ) !== realpath( $dest ) ) {
 				wp_delete_file( $heic_file );
 			}
-			return (int) $heic_id;
+			clean_post_cache( $heic_id );
+			return $metadata;
+		}
+
+		/**
+		 * Deletes a preserved .heic when its converted attachment is deleted.
+		 *
+		 * @param  int $post_id Attachment ID.
+		 * @return void
+		 */
+		public function delete_preserved_original( $post_id ) {
+			$relative = get_post_meta( $post_id, self::META_ORIGINAL, true );
+			if ( ! is_string( $relative ) || '' === $relative ) {
+				return;
+			}
+			$uploads   = wp_get_upload_dir();
+			$real_base = realpath( $uploads['basedir'] );
+			$real_path = realpath( path_join( $uploads['basedir'], $relative ) );
+			if ( ! $real_base || ! $real_path ) {
+				return;
+			}
+			$real_base = wp_normalize_path( trailingslashit( $real_base ) );
+			$real_path = wp_normalize_path( $real_path );
+			if ( 0 !== strpos( $real_path, $real_base ) ) {
+				return;
+			}
+			$extension = strtolower( (string) pathinfo( $real_path, PATHINFO_EXTENSION ) );
+			if ( ! in_array( $extension, array( 'heic', 'heif' ), true ) ) {
+				return;
+			}
+			wp_delete_file( $real_path );
 		}
 
 		/* --------------------------------------------------------------------- */
@@ -400,7 +520,7 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 		private function api_convert( $file, $format, $ticket ) {
 			$dir  = dirname( $file );
 			$ext  = $this->extension( $format );
-			$base = basename( $file, '.heic' );
+			$base = pathinfo( $file, PATHINFO_FILENAME );
 			$name = wp_unique_filename( $dir, "{$base}.{$ext}" );
 			$dest = trailingslashit( $dir ) . $name;
 
