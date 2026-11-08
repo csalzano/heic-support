@@ -1,14 +1,14 @@
 === HEIC Support ===
 Contributors: salzano
 Donate link: https://breakfastco.xyz/heic-support/
-Tags: heic, heif, webp, avif, iphone, convert
+Tags: heic, heif, webp, avif, iphone
 Requires at least: 5.9
 Tested up to: 7.1.4
 Stable tag: 2.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Add iPhone .heic photos to WordPress and auto-create .webp, .avif, or .jpg copies. Free forever on thousands of sites; optional cloud conversion for any host.
+Add iPhone .heic photos to WordPress and auto-create .webp, .avif, or .jpg copies. Free on most hosts; optional cloud conversion for any host.
 
 
 == Description ==
