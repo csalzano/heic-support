@@ -35,6 +35,9 @@ if ( ! class_exists( 'Heic_Support_Library' ) ) {
 			add_action( 'attachment_submitbox_misc_actions', array( $this, 'submitbox_convert_button' ) );
 			add_filter( 'attachment_fields_to_edit', array( $this, 'attachment_field' ), 10, 2 );
 			add_filter( 'media_row_actions', array( $this, 'row_action' ), 10, 2 );
+			add_filter( 'post_mime_types', array( $this, 'register_heic_mime_type' ) );
+			add_action( 'pre_get_posts', array( $this, 'filter_list_query' ) );
+			add_filter( 'ajax_query_attachments_args', array( $this, 'filter_grid_query' ) );
 		}
 
 		/**
@@ -209,6 +212,77 @@ if ( ! class_exists( 'Heic_Support_Library' ) ) {
 				esc_html( $text )
 			);
 			return $actions;
+		}
+
+		/**
+		 * Adds HEIC / HEIF to the Media Library filter bar.
+		 *
+		 * @param  array $post_mime_types Registered mime types.
+		 * @return array
+		 */
+		public function register_heic_mime_type( $post_mime_types ) {
+			$post_mime_types['image/heic'] = array(
+				__( 'HEIC / HEIF', 'heic-support' ),
+				__( 'Manage HEIC / HEIF', 'heic-support' ),
+				/* translators: %s: number of HEIC/HEIF images */
+				_n_noop( '%s HEIC / HEIF', '%s HEIC / HEIF', 'heic-support' ),
+			);
+			return $post_mime_types;
+		}
+
+		/**
+		 * Applies the HEIC / HEIF filter to the Media Library list view.
+		 *
+		 * @param  WP_Query $query Query.
+		 * @return void
+		 */
+		public function filter_list_query( $query ) {
+			if ( ! is_admin() || ! $query->is_main_query() || 'image/heic' !== $query->get( 'post_mime_type' ) ) {
+				return;
+			}
+			$vars = self::heic_query_vars(
+				array(
+					'post_mime_type' => $query->get( 'post_mime_type' ),
+					'meta_query'     => $query->get( 'meta_query' ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				)
+			);
+			$query->set( 'post_mime_type', $vars['post_mime_type'] );
+			$query->set( 'meta_query', $vars['meta_query'] ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+		}
+
+		/**
+		 * Applies the HEIC / HEIF filter to the Media Library grid view.
+		 *
+		 * @param  array $query Query vars.
+		 * @return array
+		 */
+		public function filter_grid_query( $query ) {
+			if ( empty( $query['post_mime_type'] ) || 'image/heic' !== $query['post_mime_type'] ) {
+				return $query;
+			}
+			return self::heic_query_vars( $query );
+		}
+
+		/**
+		 * Matches files still stored as .heic or .heif. WordPress 6.7+ converts
+		 * HEIC uploads to JPEG but keeps post_mime_type image/heic, so the mime
+		 * type alone also matches those JPEGs.
+		 *
+		 * @param  array $vars Query vars.
+		 * @return array
+		 */
+		private static function heic_query_vars( array $vars ) {
+			$meta = empty( $vars['meta_query'] ) ? array() : (array) $vars['meta_query'];
+
+			$meta[] = array(
+				'key'     => '_wp_attached_file',
+				'value'   => '\.(heic|heif)$',
+				'compare' => 'REGEXP',
+			);
+
+			$vars['post_mime_type'] = array( 'image/heic', 'image/heif' );
+			$vars['meta_query']     = $meta; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			return $vars;
 		}
 
 		/**
