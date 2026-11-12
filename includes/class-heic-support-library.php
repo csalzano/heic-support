@@ -38,6 +38,9 @@ if ( ! class_exists( 'Heic_Support_Library' ) ) {
 			add_filter( 'post_mime_types', array( $this, 'register_heic_mime_type' ) );
 			add_action( 'pre_get_posts', array( $this, 'filter_list_query' ) );
 			add_filter( 'ajax_query_attachments_args', array( $this, 'filter_grid_query' ) );
+			add_filter( 'bulk_actions-upload', array( $this, 'register_bulk_action' ) );
+			add_filter( 'handle_bulk_actions-upload', array( $this, 'handle_bulk_action' ), 10, 3 );
+			add_action( 'admin_notices', array( $this, 'bulk_action_notice' ) );
 		}
 
 		/**
@@ -283,6 +286,121 @@ if ( ! class_exists( 'Heic_Support_Library' ) ) {
 			$vars['post_mime_type'] = array( 'image/heic', 'image/heif' );
 			$vars['meta_query']     = $meta; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 			return $vars;
+		}
+
+		/**
+		 * Adds the convert action to the Media Library bulk actions dropdown.
+		 *
+		 * @param  array $actions Existing bulk actions.
+		 * @return array
+		 */
+		public function register_bulk_action( $actions ) {
+			if ( 'unavailable' === $this->route() ) {
+				return $actions;
+			}
+			$ext   = Heic_Support_Plugin::get_extension();
+			$label = self::replaces()
+				? sprintf(
+					/* translators: %s: file extension without leading dot, e.g. "jpg". */
+					__( 'Replace with .%s', 'heic-support' ),
+					$ext
+				)
+				: sprintf(
+					/* translators: %s: file extension without leading dot, e.g. "webp". */
+					__( 'Create .%s copies', 'heic-support' ),
+					$ext
+				);
+			if ( 'cloud' === $this->route() ) {
+				$label = sprintf(
+					/* translators: %s: bulk action label, e.g. "Create .webp copies". */
+					__( '%s (1 credit each)', 'heic-support' ),
+					$label
+				);
+			}
+			$actions['heic_support_convert'] = $label;
+			return $actions;
+		}
+
+		/**
+		 * Processes selected Media Library items for HEIC conversion.
+		 *
+		 * @param  string $redirect_url Redirect URL after the action.
+		 * @param  string $action       Bulk action key.
+		 * @param  array  $post_ids     Selected attachment IDs.
+		 * @return string
+		 */
+		public function handle_bulk_action( $redirect_url, $action, $post_ids ) {
+			if ( 'heic_support_convert' !== $action ) {
+				return $redirect_url;
+			}
+			if ( ! current_user_can( 'upload_files' ) ) {
+				return $redirect_url;
+			}
+			$converted = 0;
+			$failed    = 0;
+			foreach ( $post_ids as $post_id ) {
+				if ( ! self::is_pending_attachment( (int) $post_id ) ) {
+					continue;
+				}
+				$result = $this->convert_attachment( (int) $post_id );
+				if ( is_wp_error( $result ) ) {
+					$failed++;
+				} else {
+					$converted++;
+				}
+			}
+			$redirect_url = remove_query_arg( array( 'heic_support_converted', 'heic_support_failed' ), $redirect_url );
+			$redirect_url = add_query_arg(
+				array(
+					'heic_support_converted' => $converted,
+					'heic_support_failed'    => $failed,
+				),
+				$redirect_url
+			);
+			return $redirect_url;
+		}
+
+		/**
+		 * Shows the result of a bulk conversion as an admin notice.
+		 *
+		 * @return void
+		 */
+		public function bulk_action_notice() {
+			$screen = get_current_screen();
+			if ( ! $screen || 'upload' !== $screen->id || ! current_user_can( 'upload_files' ) ) {
+				return;
+			}
+			// phpcs:disable WordPress.Security.NonceVerification
+			if ( ! isset( $_GET['heic_support_converted'] ) && ! isset( $_GET['heic_support_failed'] ) ) {
+				return;
+			}
+			$converted = isset( $_GET['heic_support_converted'] ) ? (int) $_GET['heic_support_converted'] : 0;
+			$failed    = isset( $_GET['heic_support_failed'] ) ? (int) $_GET['heic_support_failed'] : 0;
+			// phpcs:enable WordPress.Security.NonceVerification
+			if ( $converted > 0 ) {
+				printf(
+					'<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+					esc_html(
+						sprintf(
+							/* translators: %s: number of images. */
+							_n( 'Converted %s image.', 'Converted %s images.', $converted, 'heic-support' ),
+							number_format_i18n( $converted )
+						)
+					)
+				);
+			}
+			if ( $failed > 0 ) {
+				printf(
+					'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
+					esc_html(
+						sprintf(
+							/* translators: %s: number of conversions. */
+							_n( '%s conversion failed.', '%s conversions failed.', $failed, 'heic-support' ),
+							number_format_i18n( $failed )
+						)
+					)
+				);
+			}
 		}
 
 		/**
