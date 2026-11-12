@@ -190,7 +190,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 *
 		 * @return string
 		 */
-		protected static function get_extension() {
+		public static function get_extension() {
 			$format = self::get_format();
 			if ( 'jpeg' === $format ) {
 				return apply_filters( 'heic_support_extension', 'jpg' );
@@ -204,7 +204,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 *
 		 * @return string
 		 */
-		protected static function get_format() {
+		public static function get_format() {
 			$value = get_option( 'heic_support_format' );
 			if ( ! in_array( $value, array( 'webp', 'jpeg', 'avif' ), true ) ) {
 				$value = 'webp';
@@ -582,6 +582,10 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			delete_transient( 'heic_support_credits_status' );
 			delete_transient( 'heic_support_credits_remaining' );
 			delete_transient( 'heic_support_notice' );
+
+			delete_option( 'heic_support_bulk_job' );
+			delete_transient( 'heic_support_pending_count' );
+			delete_transient( 'heic_support_bulk_lock' );
 		}
 
 		/**
@@ -614,3 +618,6 @@ $heic_support_plugin->add_hooks();
 // Cloud conversion client. Only shown if the server does not support free conversion.
 require_once __DIR__ . '/includes/class-heic-support-cloud.php';
 ( new Heic_Support_Cloud() )->add_hooks();
+
+require_once __DIR__ . '/includes/class-heic-support-library.php';
+( new Heic_Support_Library() )->add_hooks();
