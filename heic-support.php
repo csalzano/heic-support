@@ -580,12 +580,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			delete_transient( Heic_Support_Cloud::LOCAL_WORKS_TRANSIENT );
 			delete_option( Heic_Support_Cloud::LOCAL_WORKS_TRANSIENT );
 			delete_transient( 'heic_support_credits_status' );
-			delete_transient( 'heic_support_credits_remaining' );
 			delete_transient( 'heic_support_notice' );
-
-			delete_option( 'heic_support_bulk_job' );
-			delete_transient( 'heic_support_pending_count' );
-			delete_transient( 'heic_support_bulk_lock' );
 		}
 
 		/**

@@ -13,8 +13,7 @@ if ( ! class_exists( 'Heic_Support_Library' ) ) {
 	 */
 	class Heic_Support_Library {
 
-		const COUNT_TRANSIENT = 'heic_support_pending_count';
-		const COPY_META       = '_heic_support_copy_of';
+		const COPY_META = '_heic_support_copy_of';
 
 		/**
 		 * Cloud client used for route checks and cloud conversions.
@@ -44,7 +43,7 @@ if ( ! class_exists( 'Heic_Support_Library' ) ) {
 		}
 
 		/**
-		 * Enqueues the script on the settings screen and the media list.
+		 * Enqueues the script on the media list and attachment edit screens.
 		 *
 		 * @param  string $hook Current admin page hook suffix.
 		 * @return void
@@ -442,9 +441,6 @@ if ( ! class_exists( 'Heic_Support_Library' ) ) {
 			$path   = get_attached_file( $id );
 			$result = $this->convert_pending( $id, $path );
 			delete_transient( $lock );
-			if ( ! is_wp_error( $result ) ) {
-				delete_transient( self::COUNT_TRANSIENT );
-			}
 			return $result;
 		}
 

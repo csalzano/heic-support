@@ -482,16 +482,6 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 		}
 
 		/**
-		 * Credits remaining on the saved license.
-		 *
-		 * @return int
-		 */
-		public function credits_remaining() {
-			$info = $this->status();
-			return (int) $info['remaining'];
-		}
-
-		/**
 		 * Converts one file with the cloud API and leaves the result beside it.
 		 *
 		 * @param  string $file Source path.
