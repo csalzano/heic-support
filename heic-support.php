@@ -140,7 +140,6 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 
 			// Is the plugin's primary feature going to work?
 			if ( ! class_exists( 'Imagick' ) ) {
-				// No. Do not output any of the options.
 				return;
 			}
 
@@ -291,7 +290,9 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		 * @return void
 		 */
 		public function callback_section() {
+			echo '<p>';
 			esc_html_e( 'Control how .heic images are handled during uploads.', 'heic-support' );
+			echo '</p>';
 		}
 
 		/**
