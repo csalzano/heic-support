@@ -4,7 +4,7 @@ Donate link: https://breakfastco.xyz/heic-support/
 Tags: heic, heif, webp, avif, iphone
 Requires at least: 5.9
 Tested up to: 7.1.4
-Stable tag: 2.3.1
+Stable tag: 2.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -78,6 +78,11 @@ Only if your web host does not support local HEIC conversion. After activating, 
 
 == Changelog ==
 
+= 2.4.0 =
+* [Added] Converts .heic and .heif images already in the Media Library. Open one in the library to convert it, or use the row action in the list view.
+* [Added] Adds a "Create copies" bulk action to the Media Library list view for converting many selected images at once.
+* [Added] Adds a HEIC / HEIF filter to the Media Library.
+
 = 2.3.1 =
 * [Fixed] Converts a cloud .heic upload before WordPress answers the upload request, so the media modal receives a displayable image. Croppers that open immediately, including Dokan's product photo editor, no longer get a blank preview.
 * [Fixed] Reads the cached local-conversion test correctly. The stored value "0" was being treated as success, which could skip cloud conversion after the first check.
@@ -136,6 +141,9 @@ Only if your web host does not support local HEIC conversion. After activating, 
 * [Added] First public version. Adds `.heic` support to WordPress. If ImageMagick 7 or above is installed, creates `.webp` copies of `.heic` images uploaded to the Media Library.
 
 == Upgrade Notice ==
+
+= 2.4.0 =
+Converts .heic images already in the Media Library, one at a time or with a bulk action in the list view.
 
 = 2.3.1 =
 Cloud conversion finishes during the upload, so the image is ready for the media modal and cropper immediately. Achieves compatibility with Dokan Pro's add product screen.
