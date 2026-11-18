@@ -452,10 +452,19 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 				if ( $imagick->readImage( $file['tmp_name'] ) ) {
 					$format = self::get_format();
 					$imagick->setImageFormat( $format );
+					/*
+					 * Write the blob rather than calling writeImage(). writeImage()
+					 * picks the format from the path's extension, so a sideloaded
+					 * temp file named *.heic (WP-CLI's media import) came out as
+					 * HEIC again.
+					 */
+					$blob = $imagick->getImageBlob();
+					if ( '' === $blob || false === file_put_contents( $file['tmp_name'], $blob ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+						return $file;
+					}
 					$file['type'] = apply_filters( 'heic_support_mime', 'image/' . $format );
 					// iPhones name files IMG_1234.HEIC, so strip the extension case-insensitively.
 					$file['name'] = preg_replace( '/\.heic$/i', '', basename( $file['name'] ) ) . '.' . self::get_extension();
-					$imagick->writeImage( $file['tmp_name'] );
 					$file['size'] = wp_filesize( $file['tmp_name'] );
 				}
 			} catch ( ImagickException $ie ) {
