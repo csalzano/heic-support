@@ -52,6 +52,9 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			// Allow .heic files to be uploaded into the Media Library.
 			add_filter( 'upload_mimes', array( $this, 'add_mimes' ) );
 
+			// Stops PHP 8.5 from getting IMG_1234.HEIC uploads rejected by form plugins.
+			add_filter( 'wp_check_filetype_and_ext', array( $this, 'ignore_heic_case_rename' ), 10, 3 );
+
 			// Creates a copy of .heic images uploaded to the Media Library.
 			add_action( 'add_attachment', array( $this, 'create_copy' ), 12, 1 );
 
@@ -90,6 +93,33 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 				$mimes['heic'] = 'image/heic';
 			}
 			return $mimes;
+		}
+
+		/**
+		 * Drops a suggested rename that only lowercases a .HEIC extension.
+		 *
+		 * PHP 8.5's getimagesize() reports HEIC files as image/heif. WordPress
+		 * expects image/heic for a .heic file, so for IMG_1234.HEIC it
+		 * suggests the "proper" filename IMG_1234.heic. WPForms and Everest
+		 * Forms reject any upload that comes back with a suggested rename, so
+		 * every iPhone photo uploaded from a computer failed with "File type is
+		 * not allowed." WordPress lowercases the extension when it saves the
+		 * file anyway, so nothing depends on the rename.
+		 *
+		 * @param  array  $data     Values with keys ext, type, and proper_filename.
+		 * @param  string $file     Full path to the file.
+		 * @param  string $filename The name of the file.
+		 * @return array
+		 */
+		public function ignore_heic_case_rename( $data, $file, $filename ) {
+			if ( empty( $data['proper_filename'] ) || empty( $data['ext'] ) || 'heic' !== $data['ext'] ) {
+				return $data;
+			}
+			if ( 0 !== strcasecmp( (string) $data['proper_filename'], (string) $filename ) ) {
+				return $data;
+			}
+			$data['proper_filename'] = false;
+			return $data;
 		}
 
 		/**
