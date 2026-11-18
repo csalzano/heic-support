@@ -453,7 +453,8 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 					$format = self::get_format();
 					$imagick->setImageFormat( $format );
 					$file['type'] = apply_filters( 'heic_support_mime', 'image/' . $format );
-					$file['name'] = basename( $file['name'], '.heic' ) . '.' . self::get_extension();
+					// iPhones name files IMG_1234.HEIC, so strip the extension case-insensitively.
+					$file['name'] = preg_replace( '/\.heic$/i', '', basename( $file['name'] ) ) . '.' . self::get_extension();
 					$imagick->writeImage( $file['tmp_name'] );
 					$file['size'] = wp_filesize( $file['tmp_name'] );
 				}
