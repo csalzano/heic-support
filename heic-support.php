@@ -57,6 +57,8 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 
 			// Replace heic uploads without preserving the heic.
 			add_filter( 'wp_handle_upload_prefilter', array( $this, 'replace' ) );
+			// Same for sideloads, which plugins like WPForms and Everest Forms use to save form uploads to the Media Library.
+			add_filter( 'wp_handle_sideload_prefilter', array( $this, 'replace' ) );
 
 			// Populates width, height, and other attributes in meta key _wp_attachment_metadata.
 			add_filter( 'wp_generate_attachment_metadata', array( $this, 'populate_meta' ), 10, 2 );
