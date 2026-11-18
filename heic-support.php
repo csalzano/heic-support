@@ -60,6 +60,9 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			// Same for sideloads, which plugins like WPForms and Everest Forms use to save form uploads to the Media Library.
 			add_filter( 'wp_handle_sideload_prefilter', array( $this, 'replace' ) );
 
+			// Some callers label the attachment with the uploaded type even after replace() converted the file.
+			add_filter( 'wp_insert_attachment_data', array( $this, 'correct_replaced_mime' ), 10, 4 );
+
 			// Populates width, height, and other attributes in meta key _wp_attachment_metadata.
 			add_filter( 'wp_generate_attachment_metadata', array( $this, 'populate_meta' ), 10, 2 );
 
@@ -476,6 +479,42 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			}
 
 			return $file;
+		}
+
+		/**
+		 * Corrects the MIME type of a new attachment whose file replace()
+		 * already converted.
+		 *
+		 * WPForms and Everest Forms insert Media Library attachments with the
+		 * type the browser sent (image/heic) rather than the type
+		 * wp_handle_sideload() returns, which leaves a .webp or .jpg labeled
+		 * as an HEIC.
+		 *
+		 * Only new attachments are touched. Core keeps image/heic on HEICs it
+		 * converted itself, and updates to those must not change it.
+		 *
+		 * @param  array $data                Sanitized attachment post data.
+		 * @param  array $postarr             Attachment data, including the file path.
+		 * @param  array $unsanitized_postarr Unsanitized attachment data.
+		 * @param  bool  $update              Whether an existing attachment is being updated.
+		 * @return array
+		 */
+		public function correct_replaced_mime( $data, $postarr, $unsanitized_postarr = array(), $update = false ) {
+			if ( $update ) {
+				return $data;
+			}
+			if ( empty( $data['post_mime_type'] ) || ! in_array( $data['post_mime_type'], array( 'image/heic', 'image/heif' ), true ) ) {
+				return $data;
+			}
+			if ( empty( $postarr['file'] ) ) {
+				return $data;
+			}
+			$filetype = wp_check_filetype( $postarr['file'] );
+			if ( empty( $filetype['type'] ) || in_array( $filetype['ext'], array( 'heic', 'heif' ), true ) ) {
+				return $data;
+			}
+			$data['post_mime_type'] = $filetype['type'];
+			return $data;
 		}
 
 		/**
