@@ -88,6 +88,8 @@ Only if your web host does not support local HEIC conversion. After activating, 
 * [Fixed] Strips a .HEIC extension case-insensitively in replace mode. iPhone files named IMG_1234.HEIC were saved as IMG_1234.HEIC.webp.
 * [Fixed] Saves the converted file's MIME type on a new attachment when replace mode already converted the file. Some callers were storing image/heic on the .webp or .jpg.
 * [Fixed] Stops PHP 8.5 from getting IMG_1234.HEIC uploads rejected. A suggested rename that only changes the case of a .heic extension is ignored. A real mismatch, such as a JPEG named .HEIC, is still renamed.
+* [Fixed] Changes the tested up to version to 7.1.5.
+* [Fixed] Updates screenshots.
 
 = 2.3.1 =
 * [Fixed] Converts a cloud .heic upload before WordPress answers the upload request, so the media modal receives a displayable image. Croppers that open immediately, including Dokan's product photo editor, no longer get a blank preview.
