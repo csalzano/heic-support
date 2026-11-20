@@ -82,6 +82,11 @@ Only if your web host does not support local HEIC conversion. After activating, 
 * [Added] Converts .heic and .heif images already in the Media Library. Open one in the library to convert it, or use the row action in the list view.
 * [Added] Adds a "Create copies" bulk action to the Media Library list view for converting many selected images at once.
 * [Added] Adds a HEIC / HEIF filter to the Media Library.
+* [Fixed] Converts sideloaded .heic uploads in replace mode. Files saved through media_handle_sideload() and wp media import were leaving the original .heic in place.
+* [Fixed] Writes the converted image from its data, so a temporary file named *.heic cannot force the output back to HEIC. wp media import was saving HEIC again.
+* [Fixed] Strips a .HEIC extension case-insensitively in replace mode. iPhone files named IMG_1234.HEIC were saved as IMG_1234.HEIC.webp.
+* [Fixed] Saves the converted file's MIME type on a new attachment when replace mode already converted the file. Some callers were storing image/heic on the .webp or .jpg.
+* [Fixed] Stops PHP 8.5 from getting IMG_1234.HEIC uploads rejected. A suggested rename that only changes the case of a .heic extension is ignored. A real mismatch, such as a JPEG named .HEIC, is still renamed.
 
 = 2.3.1 =
 * [Fixed] Converts a cloud .heic upload before WordPress answers the upload request, so the media modal receives a displayable image. Croppers that open immediately, including Dokan's product photo editor, no longer get a blank preview.
@@ -143,7 +148,7 @@ Only if your web host does not support local HEIC conversion. After activating, 
 == Upgrade Notice ==
 
 = 2.4.0 =
-Converts .heic images already in the Media Library, one at a time or with a bulk action in the list view.
+Converts .heic images already in the Media Library, one at a time or with a bulk action in the list view. Achieves compatibility with WPForms and Everest Forms.
 
 = 2.3.1 =
 Cloud conversion finishes during the upload, so the image is ready for the media modal and cropper immediately. Achieves compatibility with Dokan Pro's add product screen.

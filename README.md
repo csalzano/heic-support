@@ -2,7 +2,9 @@
 
 # HEIC Support
 
-Allows .heic uploads to the Media Library. Creates .webp, .avif, or .jpg copies of .heic images when they are uploaded. An optional feature replaces the original upload instead of creating a copy.
+Allows .heic uploads to the Media Library. Creates .webp, .avif, or .jpg copies of .heic images when they are uploaded. Images already in the library can be converted one at a time, or in bulk with Create copies in the list view.
+
+An optional feature replaces the original upload instead of creating a copy. Replace mode also converts sideloaded files, including `media_handle_sideload()` and `wp media import`. An iPhone file named `IMG_1234.HEIC` is saved with the converted extension, and the new attachment uses the converted file's MIME type. On PHP 8.5, a rename that only changes the case of a `.heic` extension no longer causes the upload to be rejected.
 
 Creation of .webp, .avif, or .jpg copies usually works on servers running ImageMagick 7 or above. Check Settings → Media → HEIC Support after activating to see if your server provides ImageMagick.
 
