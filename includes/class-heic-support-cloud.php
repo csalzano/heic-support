@@ -733,14 +733,10 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 
 			if ( '' === $key ) {
 				echo '<input type="text" class="regular-text" name="heic_support_license_key" value="" autocomplete="off" placeholder="' . esc_attr__( 'Paste your license key', 'heic-support' ) . '" />';
-				echo '<p class="description">';
 				printf(
-					/* translators: 1. Anchor opening tag. 2. Anchor closing tag. */
-					esc_html__( 'Already bought credits? Enter your license key and click Save Changes. Need credits? %1$sGet a pack of conversion credits%2$s. One credit converts one image, starting at 3 conversions for $5.99.', 'heic-support' ),
-					'<a href="' . esc_url( trailingslashit( HEIC_SUPPORT_STORE_URL ) . 'heic-support/' ) . '" target="_blank" rel="noopener"><strong>',
-					'</strong></a>'
+					'<p class="description">%s</p>',
+					esc_html__( 'Enter your license key and click Save Changes.', 'heic-support' )
 				);
-				echo '</p>';
 				return;
 			}
 
@@ -789,8 +785,8 @@ if ( ! class_exists( 'Heic_Support_Cloud' ) ) {
 			printf(
 				'<label><input type="checkbox" name="heic_support_cloud_enabled" value="1" %s /> %s</label><p class="description">%s</p>',
 				checked( $enabled, true, false ),
-				esc_html__( 'Automatically convert every new .heic upload in the cloud (uses 1 credit per image).', 'heic-support' ),
-				esc_html__( 'Turn this on after you have saved a license key with available credits.', 'heic-support' )
+				esc_html__( 'Automatically convert every new .heic upload in the cloud.', 'heic-support' ),
+				esc_html__( 'Turn this on after you have saved a license key.', 'heic-support' )
 			);
 		}
 

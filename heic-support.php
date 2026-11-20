@@ -266,14 +266,14 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		public function callback_format_setting() {
 			// Is the plugin's primary feature going to work?
 			if ( ! class_exists( 'Imagick' ) ) {
-				// No. Frame the cloud option around the benefit, with a clear next step.
+				// No. Explain cloud conversion here. The fields below collect the key and the switch.
 				printf(
 					/* translators: 1. Anchor element opening tag. 2. Anchor element closing tag. */
 					'<p>%1$s</p><p>%2$s</p>',
 					esc_html__( 'Your web host can\'t convert .heic images on its own. They will upload, but won\'t display in most browsers.', 'heic-support' ),
 					sprintf(
 						/* translators: 1. Anchor element opening tag. 2. Anchor element closing tag. */
-						esc_html__( 'HEIC Support can convert them for you automatically in the cloud, on any host, without installing more software. One credit converts one image, and packs start at 3 conversions for $5.99. %1$sGet conversion credits%2$s, then add your license key below to switch it on.', 'heic-support' ),
+						esc_html__( 'HEIC Support can convert them in the cloud, on any host, without installing more software. One credit converts one image, and packs start at 3 conversions for $5.99. %1$sGet conversion credits%2$s.', 'heic-support' ),
 						'<a href="https://breakfastco.xyz/heic-support/" target="_blank" rel="noopener"><strong>',
 						'</strong></a>'
 					)
