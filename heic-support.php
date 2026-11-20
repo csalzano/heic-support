@@ -174,7 +174,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			);
 
 			// Is the plugin's primary feature going to work?
-			if ( ! class_exists( 'Imagick' ) ) {
+			if ( ! $this->imagick_available() ) {
 				return;
 			}
 
@@ -259,13 +259,22 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 		}
 
 		/**
+		 * Whether the Imagick class can be used.
+		 *
+		 * @return bool
+		 */
+		private function imagick_available() {
+			return (bool) apply_filters( 'heic_support_imagick_available', class_exists( 'Imagick' ) );
+		}
+
+		/**
 		 * Outputs HTML that renders the Format setting radio buttons.
 		 *
 		 * @return void
 		 */
 		public function callback_format_setting() {
 			// Is the plugin's primary feature going to work?
-			if ( ! class_exists( 'Imagick' ) ) {
+			if ( ! $this->imagick_available() ) {
 				// No. Explain cloud conversion here. The fields below collect the key and the switch.
 				printf(
 					/* translators: 1. Anchor element opening tag. 2. Anchor element closing tag. */
@@ -563,7 +572,7 @@ if ( ! class_exists( 'Heic_Support_Plugin' ) ) {
 			}
 
 			// Try our test image conversion & preserve data about the result.
-			if ( ! class_exists( 'Imagick' ) ) {
+			if ( ! $this->imagick_available() ) {
 				// Can't even try.
 				$this->test_success     = false;
 				Heic_Support_Cloud::cache_local_heic_supported( false );
