@@ -3,7 +3,7 @@ Contributors: salzano
 Donate link: https://breakfastco.xyz/heic-support/
 Tags: heic, heif, webp, avif, iphone
 Requires at least: 5.9
-Tested up to: 7.1.4
+Tested up to: 7.1.5
 Stable tag: 2.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
