@@ -75,6 +75,7 @@ Only if your web host does not support local HEIC conversion. After activating, 
 
 1. The settings at Settings > Media > HEIC Support in the dashboard on a server that supports free conversion to .webp, .avif, or .jpg.
 2. The settings at Settings > Media > HEIC Support in the dashboard when the server does not support free conversion.
+3. The Media Library list view filtered to HEIC / HEIF, with a row action and a bulk action to create copies.
 
 == Changelog ==
 

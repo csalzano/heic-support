@@ -27,6 +27,10 @@ The settings are located at Settings → Media → HEIC Support in the dashboard
 
 ![Screenshot-2](assets/screenshot-2.png)
 
+3. The Media Library list view filtered to HEIC / HEIF, with a row action and a bulk action to create copies.
+
+![Screenshot-3](assets/screenshot-3.png)
+
 ## Filters
 
 `heic_support_extension`
